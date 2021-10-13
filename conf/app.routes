@@ -1,3 +1,6 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.platforminitiatives.controllers.MicroserviceHelloWorldController.hello
+GET         /                               uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.displayInitiatives
+GET         /default-branches               uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.displayInitiatives
+
+GET         /play-upgrade                   uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.displayInitiatives
