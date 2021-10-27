@@ -19,9 +19,6 @@ package uk.gov.hmrc.platforminitiatives.models
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{OFormat, Writes, __}
 
-import java.net.URL
-import scala.collection.generic.Sorted
-
 
 case class PlatformInitiative(
   initiativeName            : String,
@@ -35,21 +32,22 @@ case class PlatformInitiative(
 object PlatformInitiative {
 
   implicit val format: OFormat[PlatformInitiative] = {
-    ((__ \ "initiativeName").format[String]
-      ~ (__ \ "initiativeDescription").format[String]
-      ~ (__ \ "currentProgress").format[Int]
-      ~ (__ \ "targetProgress").format[Int]
-      ~ (__ \ "completedLegend").format[String]
-      ~ (__ \ "inProgressLegend").format[String]
-      ) (apply, unlift(unapply))
+    ((__ \ "initiativeName"           ).format[String]
+      ~ (__ \ "initiativeDescription" ).format[String]
+      ~ (__ \ "currentProgress"       ).format[Int]
+      ~ (__ \ "targetProgress"        ).format[Int]
+      ~ (__ \ "completedLegend"       ).format[String]
+      ~ (__ \ "inProgressLegend"      ).format[String]
+      ) (PlatformInitiative.apply, unlift(PlatformInitiative.unapply))
   }
+
   implicit val writes: Writes[PlatformInitiative] = {
-    ((__ \ "initiativeName").write[String]
-      ~ (__ \ "initiativeDescription").write[String]
-      ~ (__ \ "currentProgress").write[Int]
-      ~ (__ \ "targetProgress").write[Int]
-      ~ (__ \ "completedLegend").format[String]
-      ~ (__ \ "inProgressLegend").format[String]
+    ((__ \ "initiativeName"           ).write[String]
+      ~ (__ \ "initiativeDescription" ).write[String]
+      ~ (__ \ "currentProgress"       ).write[Int]
+      ~ (__ \ "targetProgress"        ).write[Int]
+      ~ (__ \ "completedLegend"       ).write[String]
+      ~ (__ \ "inProgressLegend"      ).write[String]
       ) (unlift(unapply))
   }
 }

@@ -16,20 +16,17 @@
 
 package uk.gov.hmrc.platforminitiatives.controllers
 
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import org.mockito.MockitoSugar
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.mvc.Results
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject()(cc: ControllerComponents)
-    extends BackendController(cc) {
+class PlatformInitiativesControllerSpec extends AnyWordSpec with Matchers with Results with MockitoSugar {
 
-  def hello(): Action[AnyContent] = Action.async { implicit request =>
-    println("Hello world!")
-    println("Hello world!")
-    println("Hello world!")
-    println("Hello world!")
-    Future.successful(Ok("Hello world"))
+  "Platform Initiatives controller" should {
+    "have the correct url set up for the initiatives list" in {
+      uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.allInitiatives()
+        .url mustBe "/"
+    }
   }
 }

@@ -70,9 +70,7 @@ object RepositoryDisplayDetails {
 }
 
 class TeamsAndRepositoriesConnector @Inject()(http: HttpClient, servicesConfig: ServicesConfig)(implicit val ec: ExecutionContext) {
-
   private implicit val rddf = RepositoryDisplayDetails.format
-
 
   private val teamsAndServicesBaseUrl: String =
     servicesConfig.baseUrl("teams-and-repositories")
@@ -84,13 +82,9 @@ class TeamsAndRepositoriesConnector @Inject()(http: HttpClient, servicesConfig: 
 }
 
 object TeamsAndRepositoriesConnector {
-
   type ServiceName = String
-
   sealed trait TeamsAndRepositoriesError
-
   case class HTTPError(code: Int) extends TeamsAndRepositoriesError
-
   case class ConnectionError(exception: Throwable) extends TeamsAndRepositoriesError {
     override def toString: String = exception.getMessage
   }

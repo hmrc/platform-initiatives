@@ -1,6 +1,3 @@
 # microservice specific routes
 
-GET         /                               uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.displayInitiatives
-GET         /default-branches               uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.displayInitiatives
-
-GET         /play-upgrade                   uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.displayInitiatives
+GET         /                               uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.allInitiatives

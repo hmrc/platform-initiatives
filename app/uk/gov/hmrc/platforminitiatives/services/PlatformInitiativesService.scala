@@ -18,53 +18,102 @@ package uk.gov.hmrc.platforminitiatives.services
 
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, PlatformInitiative}
+import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
+import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import java.net.URL
 import javax.inject.Inject
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 class PlatformInitiativesService @Inject()(
-    teamsAndRepositoriesConnector: TeamsAndRepositoriesConnector,
-    serviceDependenciesConnector: ServiceDependenciesConnector,
-    cc:                            ControllerComponents
+    teamsAndRepositoriesConnector : TeamsAndRepositoriesConnector,
+    serviceDependenciesConnector  : ServiceDependenciesConnector,
+    cc                            : ControllerComponents
   ) extends BackendController(cc) {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  // TODO: Improve this - This needs to be a for loop over future values.
-  //        This will work for the purposes of demonstrating.
-  def getAllDefaultBranches(implicit ec: ExecutionContext): Seq[RepositoryDisplayDetails] = {
-    Await.result(teamsAndRepositoriesConnector.allDefaultBranches, Duration.create("1 second"))
+  def allPlatformInitiatives(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
+    val initiatives = Seq(
+      createDefaultBranchesInitiative,
+      createUpgradeInitiative(
+        initiativeName        = "Play 2.6 upgrade",
+        initiativeDescription = "Play 2.6 upgrade - Deprecate [Play 2.5 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
+        dependencyName        = "play",
+        version               = Option(Version(2,6,0))
+      ),
+      createUpgradeInitiative(
+        initiativeName        = "Play 2.8 upgrade",
+        initiativeDescription = "Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
+        dependencyName        = "play",
+        version               = Option(Version(2,8,0))
+      ),
+      createUpgradeInitiative(
+        initiativeName        = "Auth-client upgrade",
+        initiativeDescription = "[CL250 Security upgrade required](https://confluence.tools.tax.service.gov.uk/x/RgpxDw)",
+        dependencyName        = "auth-client",
+        version               = Option(Version(5,6,0))
+      )
+    )
+    Future.sequence(initiatives)
   }
-  def getAllFutureDefaultBranches(implicit ec: ExecutionContext): Future[Seq[RepositoryDisplayDetails]] = {
-    teamsAndRepositoriesConnector.allDefaultBranches.map { repositories =>
-      repositories
+
+  def createDefaultBranchesInitiative(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
+    teamsAndRepositoriesConnector.allDefaultBranches.map { repos =>
+      constructPlatformInitiative(
+      initiativeName = "Update Default Branch Terminology",
+      initiativeDescription = "To update default branch names - [Default branch tracker](https://catalogue.tax.service.gov.uk/defaultbranch).",
+      currentProgress = repos
+        .filter   (!_.isArchived)
+        .map      (_.defaultBranch)
+        .count    (_ != "master"),
+      targetProgress = repos
+        .filter   (!_.isArchived)
+        .map      (_.defaultBranch)
+        .length,
+      completedLegend = "Updated",
+      inProgressLegend = "Master"
+      )
     }
   }
 
-  def getAllServiceDependencies(implicit ec: ExecutionContext): Seq[Dependencies] = {
-    Await.result(serviceDependenciesConnector.getAllDependencies(), Duration.create("5 seconds"))
+  def createUpgradeInitiative(
+    initiativeName              : String,
+    initiativeDescription       : String,
+    dependencyName              : String,
+    version                     : Option[Version]
+  )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
+      serviceDependenciesConnector.getAllDependencies.map { repos =>
+        constructPlatformInitiative(
+          initiativeName = initiativeName,
+          initiativeDescription = initiativeDescription,
+          currentProgress = repos
+            .flatten  (_.toDependencySeq
+            .filter   (_.name  == dependencyName)
+            .filter   (repo    => version.fold(false)(repo.currentVersion >= _))
+          ).length,
+          targetProgress = repos
+            .flatten  (_.toDependencySeq)
+            .count    (_.name == dependencyName)
+      )
+    }
   }
 
-  def transformDefaultBranches(
-    initiativeName            : String,
-    initiativeDescription     : String,
-    currentProgress           : Int,
-    targetProgress            : Int,
-    completedLegend           : String = "Completed",
-    inProgressLegend          : String = "In progress",
+  def constructPlatformInitiative(
+    initiativeName              : String,
+    initiativeDescription       : String,
+    currentProgress             : Int,
+    targetProgress              : Int,
+    completedLegend             : String = "Completed",
+    inProgressLegend            : String = "Not Completed",
   ): PlatformInitiative = {
     PlatformInitiative(
-      initiativeName          =     initiativeName,
-      initiativeDescription   =     initiativeDescription,
-      currentProgress         =     currentProgress,
-      targetProgress          =     targetProgress,
-      completedLegend         =     completedLegend,
-      inProgressLegend        =     inProgressLegend
+      initiativeName            =     initiativeName,
+      initiativeDescription     =     initiativeDescription,
+      currentProgress           =     currentProgress,
+      targetProgress            =     targetProgress,
+      completedLegend           =     completedLegend,
+      inProgressLegend          =     inProgressLegend
     )
   }
 }

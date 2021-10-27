@@ -33,11 +33,6 @@ class ServiceDependenciesConnector @Inject() (
 
   def getAllDependencies()(implicit hc: HeaderCarrier): Future[Seq[Dependencies]] = {
     import Dependencies.Implicits.reads
-    // Todo: find out how to populate the below locally for development.
     http.GET[Seq[Dependencies]](url"$servicesDependenciesBaseUrl/api/dependencies")
-  }
-
-  def getAllBobbyRules(dependencies: Future[Seq[Dependencies]])(implicit hc: HeaderCarrier): Unit = {
-//    dependencies.map(a => a.map(_.libraryDependencies.map(_)))
   }
 }
