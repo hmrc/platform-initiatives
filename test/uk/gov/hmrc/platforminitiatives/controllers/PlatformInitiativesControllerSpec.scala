@@ -26,7 +26,7 @@ class PlatformInitiativesControllerSpec extends AnyWordSpec with Matchers with R
   "Platform Initiatives controller" should {
     "have the correct url set up for the initiatives list" in {
       uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.allInitiatives()
-        .url mustBe "/"
+        .url mustBe "/initiatives"
     }
   }
 }

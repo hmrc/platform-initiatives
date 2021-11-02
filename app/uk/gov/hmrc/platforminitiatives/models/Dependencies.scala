@@ -45,7 +45,6 @@ case class Dependency(
 
   object Dependencies {
     object Implicits {
-      @silent("never used") private implicit val dtr = RestFormats.dateTimeFormats
       private implicit val svf      = Version.format
       implicit val readsDependency  : Reads[Dependency]   = Json.reads[Dependency]
       implicit val reads            : Reads[Dependencies] = Json.reads[Dependencies]

@@ -19,69 +19,49 @@ package uk.gov.hmrc.platforminitiatives.connectors
 import org.mockito.MockitoSugar
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.mvc.{ControllerComponents, Results}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import com.github.tomakehurst.wiremock.client.WireMock._
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import play.api.mvc.Results
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Dependency, Version}
-import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
+import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.language.postfixOps
-import scala.util.Success
 
 class ServiceDependenciesConnectorSpec
   extends AnyWordSpec
     with Matchers
     with Results
-    with MockitoSugar {
+    with MockitoSugar
+    with GuiceOneAppPerSuite
+    with HttpClientSupport
+    with WireMockSupport {
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  override lazy val resetWireMockMappings = false
+  override lazy val wireMockRootDirectory = "test/resources"
 
-  "getAllDependencies" should {
-    "return a sequence of dependencies" in new Setup {
-      when(mockServiceDependenciesConnector.getAllDependencies) thenReturn
-        Future.successful(mockDependencies)
+  override def fakeApplication(): Application =
+    new GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.service-dependencies.host" -> wireMockHost,
+        "microservice.services.service-dependencies.port" -> wireMockPort,
+        "play.http.requestHandler" -> "play.api.http.DefaultHttpRequestHandler",
+        "metrics.jvm" -> false
+      ).build()
 
-      val result: Future[Seq[Dependencies]] = mockServiceDependenciesConnector.getAllDependencies
-      result.onComplete({
-        case Success(value) => {
-          value.length mustBe 1
-        }
-      })
+  private val connector = app.injector.instanceOf[ServiceDependenciesConnector]
+
+  "ServiceDependenciesConnector.getAllDependencies" should {
+    "return correct JSON for Dependencies" in {
+
+      stubFor(
+        get(urlEqualTo(s"/api/dependencies"))
+          .willReturn(aResponse().withBodyFile("/service-dependencies/dependencies.json"))
+      )
+      val dependencies = connector.getAllDependencies().futureValue
+      dependencies.head.repositoryName mustBe "hmrc-test"
     }
   }
-
-
-  private[this] trait Setup {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
-    val mockServiceDependenciesConnector: ServiceDependenciesConnector = mock[ServiceDependenciesConnector]
-    val mockControllerComponents: ControllerComponents = mock[ControllerComponents]
-    val mockPlatformInitiativesService: PlatformInitiativesService = new PlatformInitiativesService(mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
-
-    val mockPlatformInitiativesController: PlatformInitiativesController = new PlatformInitiativesController(mockPlatformInitiativesService,mockControllerComponents)
-
-    val mockDependencies = Seq(
-      Dependencies(
-        repositoryName = "repository1",
-        libraryDependencies = Seq(
-          Dependency(
-            name = "Dep1",
-            group = "Group1",
-            currentVersion = Version(0, 2, 0),
-            latestVersion = Option(Version(0, 2, 0))
-          ),
-          Dependency(
-            name = "Dep2",
-            group = "Group2",
-            currentVersion = Version(1, 0, 1),
-            latestVersion = Option(Version(1, 0, 1))
-          )
-        ),
-        sbtPluginsDependencies = Seq(),
-        otherDependencies = Seq()
-      )
-    )
-  }
-
 }

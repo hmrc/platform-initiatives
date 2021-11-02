@@ -16,74 +16,51 @@
 
 package uk.gov.hmrc.platforminitiatives.connectors
 
-import org.mockito.MockitoSugar
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.hmrc.http.HeaderCarrier
+  import org.mockito.MockitoSugar
+  import org.scalatest.matchers.must.Matchers
+  import org.scalatest.wordspec.AnyWordSpec
+  import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+  import com.github.tomakehurst.wiremock.client.WireMock._
+  import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+  import play.api.mvc.Results
+  import uk.gov.hmrc.http.HeaderCarrier
+  import play.api.Application
+  import play.api.inject.guice.GuiceApplicationBuilder
+  import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
 
-import java.time.LocalDateTime
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.language.postfixOps
-import scala.util.Success
+  import scala.language.postfixOps
 
-class TeamsAndRepositoriesConnectorSpec
-  extends AnyWordSpec
-    with Matchers
-    with MockitoSugar
-    with ScalaFutures {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  class TeamsAndRepositoriesConnectorSpec
+    extends AnyWordSpec
+      with Matchers
+      with Results
+      with MockitoSugar
+      with GuiceOneAppPerSuite
+      with HttpClientSupport
+      with WireMockSupport {
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+    override lazy val resetWireMockMappings = false
+    override lazy val wireMockRootDirectory = "test/resources"
 
-  "getAllRepositories" should {
-    "return a future sequence of RepositoryDisplayDetails" in new Setup {
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches) thenReturn
-        Future.successful(mockRepositories)
-      val repositories: Future[Seq[RepositoryDisplayDetails]] = mockTeamsAndRepositoriesConnector.allDefaultBranches
-      repositories.onComplete({
-        case Success(value) => {
-          value.length shouldBe 4
-        }
-      })
+    override def fakeApplication(): Application =
+      new GuiceApplicationBuilder()
+        .configure(
+          "microservice.services.teams-and-repositories.host" -> wireMockHost,
+          "microservice.services.teams-and-repositories.port" -> wireMockPort,
+          "play.http.requestHandler" -> "play.api.http.DefaultHttpRequestHandler",
+          "metrics.jvm" -> false
+        ).build()
+
+    private val connector = app.injector.instanceOf[TeamsAndRepositoriesConnector]
+
+    "TeamsAndRepositoriesConnector.allDefaultBranches" should {
+      "return correct JSON for Repository Display Details" in {
+        stubFor(
+          get(urlEqualTo(s"/api/repositories"))
+            .willReturn(aResponse().withBodyFile("/teams-and-repositories/repositories.json"))
+        )
+        val dependencies = connector.allDefaultBranches.futureValue
+        dependencies.head.name mustBe "test"
+      }
     }
   }
-
-  private[this] trait Setup {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
-    val mockRepositories: Seq[RepositoryDisplayDetails] = Seq(
-      RepositoryDisplayDetails(
-        name = "test",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = false,
-        teamNames = Seq("Team-1", "Team-2"),
-        defaultBranch = "main"
-      ),
-      RepositoryDisplayDetails(
-        name = "test-2",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = false,
-        teamNames = Seq("Team-1"),
-        defaultBranch = "master"
-      ),
-      RepositoryDisplayDetails(
-        name = "test-3",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = false,
-        teamNames = Seq("Team-1"),
-        defaultBranch = "main"
-      ),
-      RepositoryDisplayDetails(
-        name = "test-4",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = true,
-        teamNames = Seq("Team-2"),
-        defaultBranch = "master"
-      )
-    )
-  }
-}

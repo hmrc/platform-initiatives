@@ -20,12 +20,13 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
 import uk.gov.hmrc.platforminitiatives.models.Dependencies
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class ServiceDependenciesConnector @Inject() (
-  http          : HttpClient,
-  servicesConfig: ServicesConfig
+  httpClient      : HttpClient,
+  servicesConfig  : ServicesConfig
 )(implicit ec: ExecutionContext)  {
 
   private val servicesDependenciesBaseUrl: String =
@@ -33,6 +34,6 @@ class ServiceDependenciesConnector @Inject() (
 
   def getAllDependencies()(implicit hc: HeaderCarrier): Future[Seq[Dependencies]] = {
     import Dependencies.Implicits.reads
-    http.GET[Seq[Dependencies]](url"$servicesDependenciesBaseUrl/api/dependencies")
+    httpClient.GET[Seq[Dependencies]](url"$servicesDependenciesBaseUrl/api/dependencies")
   }
 }

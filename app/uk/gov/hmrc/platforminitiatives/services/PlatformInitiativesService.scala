@@ -35,7 +35,12 @@ class PlatformInitiativesService @Inject()(
 
   def allPlatformInitiatives(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
     val initiatives = Seq(
-      createDefaultBranchesInitiative,
+      createDefaultBranchInitiative(
+        initiativeName        = "Update Default Branch Terminology",
+        initiativeDescription = "To update default branch names - [Default branch tracker](https://catalogue.tax.service.gov.uk/defaultbranch).",
+        completedLegend       = "Updated",
+        inProgressLegend      = "Master"
+      ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.6 upgrade",
         initiativeDescription = "Play 2.6 upgrade - Deprecate [Play 2.5 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
@@ -58,21 +63,26 @@ class PlatformInitiativesService @Inject()(
     Future.sequence(initiatives)
   }
 
-  def createDefaultBranchesInitiative(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
+  def createDefaultBranchInitiative(
+     initiativeName              : String,
+     initiativeDescription       : String,
+     completedLegend             : String = "Completed",
+     inProgressLegend            : String = "Not Completed",
+   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
     teamsAndRepositoriesConnector.allDefaultBranches.map { repos =>
-      constructPlatformInitiative(
-      initiativeName = "Update Default Branch Terminology",
-      initiativeDescription = "To update default branch names - [Default branch tracker](https://catalogue.tax.service.gov.uk/defaultbranch).",
-      currentProgress = repos
-        .filter   (!_.isArchived)
-        .map      (_.defaultBranch)
-        .count    (_ != "master"),
-      targetProgress = repos
-        .filter   (!_.isArchived)
-        .map      (_.defaultBranch)
-        .length,
-      completedLegend = "Updated",
-      inProgressLegend = "Master"
+      PlatformInitiative(
+        initiativeName            = initiativeName,
+        initiativeDescription     = initiativeDescription,
+        currentProgress           = repos
+          .filter   (!_.isArchived)
+          .map      (_.defaultBranch)
+          .count    (_ != "master"),
+        targetProgress            = repos
+          .filter   (!_.isArchived)
+          .map      (_.defaultBranch)
+          .length,
+        completedLegend           = completedLegend,
+        inProgressLegend          = inProgressLegend
       )
     }
   }
@@ -81,39 +91,25 @@ class PlatformInitiativesService @Inject()(
     initiativeName              : String,
     initiativeDescription       : String,
     dependencyName              : String,
-    version                     : Option[Version]
-  )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
-      serviceDependenciesConnector.getAllDependencies.map { repos =>
-        constructPlatformInitiative(
-          initiativeName = initiativeName,
-          initiativeDescription = initiativeDescription,
-          currentProgress = repos
-            .flatten  (_.toDependencySeq
-            .filter   (_.name  == dependencyName)
-            .filter   (repo    => version.fold(false)(repo.currentVersion >= _))
-          ).length,
-          targetProgress = repos
-            .flatten  (_.toDependencySeq)
-            .count    (_.name == dependencyName)
-      )
-    }
-  }
-
-  def constructPlatformInitiative(
-    initiativeName              : String,
-    initiativeDescription       : String,
-    currentProgress             : Int,
-    targetProgress              : Int,
+    version                     : Option[Version],
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed",
-  ): PlatformInitiative = {
-    PlatformInitiative(
-      initiativeName            =     initiativeName,
-      initiativeDescription     =     initiativeDescription,
-      currentProgress           =     currentProgress,
-      targetProgress            =     targetProgress,
-      completedLegend           =     completedLegend,
-      inProgressLegend          =     inProgressLegend
-    )
-  }
+  )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
+      serviceDependenciesConnector.getAllDependencies.map { repos =>
+        PlatformInitiative(
+          initiativeName          = initiativeName,
+          initiativeDescription   = initiativeDescription,
+          currentProgress         = repos
+            .flatten(_.toDependencySeq
+              .filter(_.name == dependencyName)
+              .filter(repo => version.fold(false)(repo.currentVersion >= _))
+            ).length,
+          targetProgress          = repos
+            .flatten(_.toDependencySeq)
+            .count(_.name == dependencyName),
+          completedLegend         = completedLegend,
+          inProgressLegend        = inProgressLegend
+        )
+      }
+    }
 }

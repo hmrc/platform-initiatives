@@ -62,8 +62,6 @@ case class RepositoryDisplayDetails(
  )
 
 object RepositoryDisplayDetails {
-  implicit val writes: Writes[RepositoryDisplayDetails] = Json.writes[RepositoryDisplayDetails]
-
   val format: OFormat[RepositoryDisplayDetails] = {
     Json.format[RepositoryDisplayDetails]
   }
@@ -82,10 +80,6 @@ class TeamsAndRepositoriesConnector @Inject()(http: HttpClient, servicesConfig: 
 }
 
 object TeamsAndRepositoriesConnector {
-  type ServiceName = String
+  case class ServiceName(name: String) extends AnyVal
   sealed trait TeamsAndRepositoriesError
-  case class HTTPError(code: Int) extends TeamsAndRepositoriesError
-  case class ConnectionError(exception: Throwable) extends TeamsAndRepositoriesError {
-    override def toString: String = exception.getMessage
-  }
 }

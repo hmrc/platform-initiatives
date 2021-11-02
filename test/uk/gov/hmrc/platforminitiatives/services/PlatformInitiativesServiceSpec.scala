@@ -34,11 +34,16 @@ import scala.language.postfixOps
 
 class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ScalaFutures {
 
-  "createDefaultBranchesInitiative" should {
+  "createDefaultBranchInitiative" should {
     "return an initiative for DefaultBranches where branch name is not updated" in new Setup {
       when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier])) thenReturn
         Future.successful(mockRepositories)
-      val result: Future[PlatformInitiative] = platformInitiativesService.createDefaultBranchesInitiative
+      val result: Future[PlatformInitiative] = platformInitiativesService.createDefaultBranchInitiative(
+        initiativeName        = "Test",
+        initiativeDescription = "Test Description",
+        completedLegend       = "Updated",
+        inProgressLegend      = "Master"
+      )
       val finalResult: PlatformInitiative = Await.result(result, 1 second)
 
       finalResult.currentProgress shouldBe 2
@@ -58,18 +63,6 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       val finalResult: PlatformInitiative = Await.result(result, 1 second)
       finalResult shouldBe a [PlatformInitiative]
       finalResult.initiativeName shouldBe "Test"
-    }
-  }
-
-  "constructPlatformInitiative" should {
-    "create a new PlatformInitiative" in new Setup {
-      val result: PlatformInitiative = platformInitiativesService.constructPlatformInitiative(
-        "Test Initiative",
-        "Test initiative description",
-        0,
-        0
-      )
-      result shouldBe a [PlatformInitiative]
     }
   }
 
