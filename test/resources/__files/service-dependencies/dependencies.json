@@ -1,0 +1,21 @@
+[{
+  "repositoryName":"hmrc-test",
+  "libraryDependencies":[{
+    "name"            : "test-dependency",
+    "group"           : "uk.gov.hmrc",
+    "currentVersion"  : {
+      "major"    : 1,
+      "minor"    : 0,
+      "patch"    : 0,
+      "original" : "1.0.0"
+    },
+    "latestVersion"   : {
+      "major"    : 1,
+      "minor"    : 0,
+      "patch"    : 0,
+      "original" : "1.0.0"
+    }
+  }],
+  "sbtPluginsDependencies":[],
+  "otherDependencies":[],
+  "lastUpdated":"1970-01-01T00:00:00Z"}]

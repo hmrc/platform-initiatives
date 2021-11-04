@@ -1,7 +1,13 @@
 
 # platform-initiatives
 
-This is a placeholder README.md for a new repository
+API for retrieving information about custom defined initiatives across the platform.
+
+# For developers:
+
+N.B Please make sure that mongodb is running locally. You can run mongo easily in docker by running:
+
+`docker run -d --name --platform-initiatives-mongo mongo`
 
 ### License
 
