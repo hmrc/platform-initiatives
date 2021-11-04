@@ -71,7 +71,6 @@ class PlatformInitiativesControllerSpec
       }
       val result     : Future[Result]          = controller.allInitiatives.apply(FakeRequest())
       val initiatives: JsValue = contentAsJson(result)
-      println(initiatives)
       status(result) mustBe 200
       initiatives mustBe Json.parse(
         """
