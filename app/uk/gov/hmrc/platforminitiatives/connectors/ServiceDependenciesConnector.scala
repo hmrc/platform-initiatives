@@ -16,24 +16,32 @@
 
 package uk.gov.hmrc.platforminitiatives.connectors
 
+import play.api.cache.AsyncCacheApi
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
 import uk.gov.hmrc.platforminitiatives.models.Dependencies
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ServiceDependenciesConnector @Inject() (
   httpClient      : HttpClient,
-  servicesConfig  : ServicesConfig
+  servicesConfig  : ServicesConfig,
+  cache           : AsyncCacheApi
 )(implicit ec: ExecutionContext)  {
 
   private val servicesDependenciesBaseUrl: String =
     servicesConfig.baseUrl("service-dependencies")
+  private val cacheExpiration: Duration =
+    servicesConfig
+      .getDuration("microservice.services.service-dependencies.cache.expiration")
 
   def getAllDependencies()(implicit hc: HeaderCarrier): Future[Seq[Dependencies]] = {
     import Dependencies.Implicits.reads
-    httpClient.GET[Seq[Dependencies]](url"$servicesDependenciesBaseUrl/api/dependencies")
+    cache.getOrElseUpdate("service-dependencies", cacheExpiration) {
+      httpClient.GET[Seq[Dependencies]](url"$servicesDependenciesBaseUrl/api/dependencies")
+    }
   }
 }

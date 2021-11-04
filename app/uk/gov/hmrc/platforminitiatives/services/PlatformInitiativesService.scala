@@ -95,16 +95,16 @@ class PlatformInitiativesService @Inject()(
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed",
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
-      serviceDependenciesConnector.getAllDependencies.map { repos =>
+      serviceDependenciesConnector.getAllDependencies.map { dependencies =>
         PlatformInitiative(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
-          currentProgress         = repos
+          currentProgress         = dependencies
             .flatten(_.toDependencySeq
               .filter(_.name == dependencyName)
               .filter(repo => version.fold(false)(repo.currentVersion >= _))
             ).length,
-          targetProgress          = repos
+          targetProgress          = dependencies
             .flatten(_.toDependencySeq)
             .count(_.name == dependencyName),
           completedLegend         = completedLegend,

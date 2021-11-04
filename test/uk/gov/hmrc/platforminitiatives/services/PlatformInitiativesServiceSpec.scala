@@ -44,7 +44,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         completedLegend       = "Updated",
         inProgressLegend      = "Master"
       )
-      val finalResult: PlatformInitiative = Await.result(result, 1 second)
+      val finalResult: PlatformInitiative = result.futureValue
 
       finalResult.currentProgress shouldBe 2
     }

@@ -1,5 +1,7 @@
-import play.sbt.PlayImport._
+import play.sbt.PlayImport.{ehcache, ws}
+
 import sbt._
+
 
 object AppDependencies {
   val bootstrapPlayVersion = "5.7.0"
@@ -7,6 +9,7 @@ object AppDependencies {
 
   val compile = Seq(
     ws,
+    ehcache,
     "uk.gov.hmrc"           %% "bootstrap-backend-play-28" % bootstrapPlayVersion,
     "uk.gov.hmrc.mongo"     %% "hmrc-mongo-play-28"        % hmrcMongoVersion,
     "uk.gov.hmrc.mongo"     %% "hmrc-mongo-metrix-play-28" % hmrcMongoVersion,
