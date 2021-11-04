@@ -81,5 +81,4 @@ class TeamsAndRepositoriesConnector @Inject()(http: HttpClient, servicesConfig: 
 
 object TeamsAndRepositoriesConnector {
   case class ServiceName(name: String) extends AnyVal
-  sealed trait TeamsAndRepositoriesError
 }
