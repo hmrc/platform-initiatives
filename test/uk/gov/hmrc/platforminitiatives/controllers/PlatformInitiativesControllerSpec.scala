@@ -19,6 +19,7 @@ package uk.gov.hmrc.platforminitiatives.controllers
 import org.mockito.MockitoSugar
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Result, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
@@ -46,68 +47,58 @@ class PlatformInitiativesControllerSpec
   }
 
   "PlatformInitiativesController.allInitiatives" should {
-    "Return 200 status for PlatformInitiatives" in new Setup {
-      when(mockPlatformInitiativesService.allPlatformInitiatives) thenReturn {
-        Future.successful(mockInitiatives)
-      }
-      val result: Future[Result] = controller.allInitiatives.apply(FakeRequest())
-      status(result) mustBe 200
-    }
-  }
-
-  "PlatformInitiativesController.allInitiatives" should {
-    "Return correct JSON for PlatformInitiatives" in new Setup {
+    "Return a 200 status code and correct JSON for PlatformInitiatives" in new Setup {
+      val mockInitiatives: Seq[PlatformInitiative] = Seq(
+        PlatformInitiative(
+          initiativeName = "Test initiative",
+          initiativeDescription = "Test initiative description",
+          currentProgress       = 10,
+          targetProgress        = 100,
+          completedLegend       = "Completed",
+          inProgressLegend      = "Not completed"
+        ),
+        PlatformInitiative(
+          initiativeName        = "Update Dependency",
+          initiativeDescription = "Update Dependency description",
+          currentProgress       = 50,
+          targetProgress        = 70,
+          completedLegend       = "Completed",
+          inProgressLegend      = "Not completed"
+        )
+      )
       when(mockPlatformInitiativesService.allPlatformInitiatives) thenReturn {
         Future.successful(mockInitiatives)
       }
       val result     : Future[Result]          = controller.allInitiatives.apply(FakeRequest())
-      val initiatives: Seq[PlatformInitiative] = contentAsJson(result).as[Seq[PlatformInitiative]]
-      initiatives.map(_.initiativeName) mustBe
-        Seq(
-          "Test initiative", "Update Dependency 1", "Update Dependency 2", "Update Dependency 3"
-        )
-      initiatives.map(_.currentProgress) mustBe Seq(10, 50, 10, 50)
+      val initiatives: JsValue = contentAsJson(result)
+      println(initiatives)
+      status(result) mustBe 200
+      initiatives mustBe Json.parse(
+        """
+          [{
+             "initiativeName"        : "Test initiative",
+             "initiativeDescription" : "Test initiative description",
+             "currentProgress"       : 10,
+             "targetProgress"        : 100,
+             "completedLegend"       : "Completed",
+             "inProgressLegend"      : "Not completed"
+           },
+           {
+             "initiativeName"        : "Update Dependency",
+             "initiativeDescription" : "Update Dependency description",
+             "currentProgress"       : 50,
+             "targetProgress"        : 70,
+             "completedLegend"       : "Completed",
+             "inProgressLegend"      : "Not completed"
+           }
+          ]
+          """)
     }
   }
 
   private trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val mockPlatformInitiativesService: PlatformInitiativesService = mock[PlatformInitiativesService]
-    val mockInitiatives: Seq[PlatformInitiative] = Seq(
-        PlatformInitiative(
-        initiativeName        = "Test initiative",
-        initiativeDescription = "Test initiative description",
-        currentProgress       = 10,
-        targetProgress        = 100,
-        completedLegend       = "Completed",
-        inProgressLegend      = "Not completed"
-    ),
-        PlatformInitiative(
-        initiativeName        = "Update Dependency 1",
-        initiativeDescription = "Update Dependency 1 description",
-        currentProgress       = 50,
-        targetProgress        = 70,
-        completedLegend       = "Completed",
-        inProgressLegend      = "Not completed"
-    ),
-        PlatformInitiative(
-        initiativeName        = "Update Dependency 2",
-        initiativeDescription = "Update Dependency 2 description",
-        currentProgress       = 10,
-        targetProgress        = 50,
-        completedLegend       = "Completed",
-        inProgressLegend      = "Not completed"
-    ),
-      PlatformInitiative(
-        initiativeName        = "Update Dependency 3",
-        initiativeDescription = "Update Dependency 3 description",
-        currentProgress       = 50,
-        targetProgress        = 50,
-        completedLegend       = "Completed",
-        inProgressLegend      = "Not completed"
-      )
-    )
-
     val controller = new PlatformInitiativesController(
         mockPlatformInitiativesService,
         stubControllerComponents()
