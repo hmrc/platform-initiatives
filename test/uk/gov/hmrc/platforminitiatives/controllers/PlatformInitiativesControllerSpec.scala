@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.platforminitiatives.controllers
 
-import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.mvc.{Result, Results}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{defaultAwaitTimeout, status, stubControllerComponents}
+import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
+import uk.gov.hmrc.platforminitiatives.models.PlatformInitiative
 import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -48,29 +47,66 @@ class PlatformInitiativesControllerSpec
 
   "PlatformInitiativesController.allInitiatives" should {
     "Return 200 status for PlatformInitiatives" in new Setup {
+      when(mockPlatformInitiativesService.allPlatformInitiatives) thenReturn {
+        Future.successful(mockInitiatives)
+      }
       val result: Future[Result] = controller.allInitiatives.apply(FakeRequest())
       status(result) mustBe 200
     }
   }
 
+  "PlatformInitiativesController.allInitiatives" should {
+    "Return correct JSON for PlatformInitiatives" in new Setup {
+      when(mockPlatformInitiativesService.allPlatformInitiatives) thenReturn {
+        Future.successful(mockInitiatives)
+      }
+      val result     : Future[Result]          = controller.allInitiatives.apply(FakeRequest())
+      val initiatives: Seq[PlatformInitiative] = contentAsJson(result).as[Seq[PlatformInitiative]]
+      initiatives.map(_.initiativeName) mustBe
+        Seq(
+          "Test initiative", "Update Dependency 1", "Update Dependency 2", "Update Dependency 3"
+        )
+      initiatives.map(_.currentProgress) mustBe Seq(10, 50, 10, 50)
+    }
+  }
+
   private trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
-    val mockServiceDependenciesConnector: ServiceDependenciesConnector = mock[ServiceDependenciesConnector]
-    val mockPlatformInitiativesService: PlatformInitiativesService =
-      new PlatformInitiativesService(
-        teamsAndRepositoriesConnector   = mockTeamsAndRepositoriesConnector,
-        serviceDependenciesConnector    = mockServiceDependenciesConnector,
-        cc                              = stubControllerComponents()
+    val mockPlatformInitiativesService: PlatformInitiativesService = mock[PlatformInitiativesService]
+    val mockInitiatives: Seq[PlatformInitiative] = Seq(
+        PlatformInitiative(
+        initiativeName        = "Test initiative",
+        initiativeDescription = "Test initiative description",
+        currentProgress       = 10,
+        targetProgress        = 100,
+        completedLegend       = "Completed",
+        inProgressLegend      = "Not completed"
+    ),
+        PlatformInitiative(
+        initiativeName        = "Update Dependency 1",
+        initiativeDescription = "Update Dependency 1 description",
+        currentProgress       = 50,
+        targetProgress        = 70,
+        completedLegend       = "Completed",
+        inProgressLegend      = "Not completed"
+    ),
+        PlatformInitiative(
+        initiativeName        = "Update Dependency 2",
+        initiativeDescription = "Update Dependency 2 description",
+        currentProgress       = 10,
+        targetProgress        = 50,
+        completedLegend       = "Completed",
+        inProgressLegend      = "Not completed"
+    ),
+      PlatformInitiative(
+        initiativeName        = "Update Dependency 3",
+        initiativeDescription = "Update Dependency 3 description",
+        currentProgress       = 50,
+        targetProgress        = 50,
+        completedLegend       = "Completed",
+        inProgressLegend      = "Not completed"
       )
-
-    when(mockServiceDependenciesConnector.getAllDependencies()(any[HeaderCarrier])) thenReturn
-      Future.successful(List.empty)
-    when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier])) thenReturn
-      Future.successful(List.empty)
-    when(mockPlatformInitiativesService.allPlatformInitiatives) thenReturn {
-      Future.successful(Seq())
-    }
+    )
 
     val controller = new PlatformInitiativesController(
         mockPlatformInitiativesService,
