@@ -21,7 +21,7 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.mvc.Results
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.Application
@@ -37,7 +37,9 @@ class ServiceDependenciesConnectorSpec
     with MockitoSugar
     with GuiceOneAppPerSuite
     with HttpClientSupport
-    with WireMockSupport {
+    with WireMockSupport
+    with ScalaFutures
+    with IntegrationPatience {
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override lazy val resetWireMockMappings = false
   override lazy val wireMockRootDirectory = "test/resources"
