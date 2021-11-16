@@ -40,14 +40,4 @@ object PlatformInitiative {
       ~ (__ \ "inProgressLegend"      ).format[String]
       ) (PlatformInitiative.apply, unlift(PlatformInitiative.unapply))
   }
-
-  implicit val writes: Writes[PlatformInitiative] = {
-    ((__ \ "initiativeName"           ).write[String]
-      ~ (__ \ "initiativeDescription" ).write[String]
-      ~ (__ \ "currentProgress"       ).write[Int]
-      ~ (__ \ "targetProgress"        ).write[Int]
-      ~ (__ \ "completedLegend"       ).write[String]
-      ~ (__ \ "inProgressLegend"      ).write[String]
-      ) (unlift(unapply))
-  }
 }
