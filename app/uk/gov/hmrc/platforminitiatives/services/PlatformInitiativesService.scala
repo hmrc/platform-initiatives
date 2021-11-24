@@ -45,19 +45,19 @@ class PlatformInitiativesService @Inject()(
         initiativeName        = "Play 2.6 upgrade",
         initiativeDescription = "Play 2.6 upgrade - Deprecate [Play 2.5 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
         dependencyName        = "play",
-        version               = Option(Version(2,6,0))
+        version               = Version(2,6,0)
       ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.8 upgrade",
         initiativeDescription = "Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
         dependencyName        = "play",
-        version               = Option(Version(2,8,0))
+        version               = Version(2,8,0)
       ),
       createUpgradeInitiative(
         initiativeName        = "Auth-client upgrade",
         initiativeDescription = "[CL250 Security upgrade required](https://confluence.tools.tax.service.gov.uk/x/RgpxDw)",
         dependencyName        = "auth-client",
-        version               = Option(Version(5,6,0))
+        version               = Version(5,6,0)
       )
     )
     Future.sequence(initiatives)
@@ -91,7 +91,7 @@ class PlatformInitiativesService @Inject()(
     initiativeName              : String,
     initiativeDescription       : String,
     dependencyName              : String,
-    version                     : Option[Version],
+    version                     : Version,
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed",
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
@@ -102,7 +102,7 @@ class PlatformInitiativesService @Inject()(
           currentProgress         = dependencies
             .flatten(_.toDependencySeq
               .filter(_.name == dependencyName)
-              .filter(repo => version.fold(false)(repo.currentVersion >= _))
+              .filter(_.currentVersion >= version)
             ).length,
           targetProgress          = dependencies
             .flatten(_.toDependencySeq)

@@ -58,7 +58,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         initiativeName        = "Test",
         initiativeDescription = "Test Description",
         dependencyName        = "Dep1",
-        version               = Option(Version(0, 2, 0))
+        version               = Version(0, 2, 0)
       )
       val finalResult: PlatformInitiative = Await.result(result, 1 second)
       finalResult shouldBe a [PlatformInitiative]
