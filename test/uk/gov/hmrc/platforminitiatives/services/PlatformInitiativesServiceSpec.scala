@@ -17,14 +17,14 @@
 package uk.gov.hmrc.platforminitiatives.services
 
 import org.mockito.MockitoSugar
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, anyString}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Dependency, PlatformInitiative, Version}
+import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Dependency, PlatformInitiative, SlugDependencies, Version}
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,17 +52,22 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
 
   "createUpgradeInitiative" should {
     "return an initiative for a Dependency Upgrade" in new Setup {
-      when(mockServiceDependenciesConnector.getAllDependencies()(any[HeaderCarrier])) thenReturn
-        Future.successful(mockDependencies)
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group     = anyString(),
+        artefact  = anyString(),
+        range     = anyString())(any[HeaderCarrier])) thenReturn
+        Future.successful(mockSlugDependencies)
       val result: Future[PlatformInitiative] = platformInitiativesService.createUpgradeInitiative(
         initiativeName        = "Test",
         initiativeDescription = "Test Description",
-        dependencyName        = "Dep1",
+        group                 = "uk.gov.hmrc",
+        artefact              = "Dep1",
         version               = Version(0, 2, 0)
       )
       val finalResult: PlatformInitiative = Await.result(result, 1 second)
       finalResult shouldBe a [PlatformInitiative]
       finalResult.initiativeName shouldBe "Test"
+      finalResult.currentProgress shouldBe 2
     }
   }
 
@@ -70,8 +75,11 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
     "return a future sequence of PlatformInitiatives" in new Setup {
       when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier])) thenReturn
         Future.successful(mockRepositories)
-      when(mockServiceDependenciesConnector.getAllDependencies()(any[HeaderCarrier])) thenReturn
-        Future.successful(mockDependencies)
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group     = anyString(),
+        artefact  = anyString(),
+        range     = anyString())(any[HeaderCarrier])) thenReturn
+        Future.successful(mockSlugDependencies)
       val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives
       val finalResult: Seq[PlatformInitiative] = Await.result(result, 1 second)
       finalResult.length shouldBe 4
@@ -164,6 +172,20 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         ),
         sbtPluginsDependencies = Seq(),
         otherDependencies = Seq()
+      )
+    )
+    val mockSlugDependencies = Seq(
+      SlugDependencies(
+        slugName    = "hmrc-test",
+        depGroup    = "uk.gov.hmrc",
+        depArtefact = "test-dependency",
+        depVersion  = "1.0.0"
+      ),
+      SlugDependencies(
+        slugName    = "hmrc-test",
+        depGroup    = "uk.gov.hmrc",
+        depArtefact = "test-dependency",
+        depVersion  = "1.5.0"
       )
     )
   }

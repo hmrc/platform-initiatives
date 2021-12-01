@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
-import com.github.ghik.silencer.silent
 import play.api.libs.json._
-import uk.gov.hmrc.http.controllers.RestFormats
 
 sealed trait VersionState
 object VersionState {
@@ -94,7 +92,7 @@ case class Dependency(
               case Some(JsString(s)) => JsSuccess(Version(s))
               case _ => JsError("Not a string")
             }
-          case _            => JsError("Not a string")
+          case _ => JsError("Not a string")
         }
 
       override def writes(v: Version) =
