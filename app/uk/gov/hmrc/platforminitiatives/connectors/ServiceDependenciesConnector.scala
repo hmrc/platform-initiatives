@@ -18,7 +18,7 @@ package uk.gov.hmrc.platforminitiatives.connectors
 
 import play.api.cache.AsyncCacheApi
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
-import uk.gov.hmrc.platforminitiatives.models.Dependencies
+import uk.gov.hmrc.platforminitiatives.models.{Dependencies, SlugDependencies}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
@@ -43,5 +43,15 @@ class ServiceDependenciesConnector @Inject() (
     cache.getOrElseUpdate("service-dependencies", cacheExpiration) {
       httpClient.GET[Seq[Dependencies]](url"$servicesDependenciesBaseUrl/api/dependencies")
     }
+  }
+
+  def getServiceDependency(
+    group     : String,
+    artefact  : String,
+    range     : String = "[0.0.0,)"
+  )(implicit hc: HeaderCarrier): Future[Seq[SlugDependencies]] = {
+    httpClient.GET[Seq[SlugDependencies]](
+      url"$servicesDependenciesBaseUrl/api/serviceDeps?group=$group&artefact=$artefact&versionRange=$range"
+    )
   }
 }

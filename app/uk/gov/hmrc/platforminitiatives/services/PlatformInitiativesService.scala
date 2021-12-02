@@ -44,20 +44,23 @@ class PlatformInitiativesService @Inject()(
       createUpgradeInitiative(
         initiativeName        = "Play 2.6 upgrade",
         initiativeDescription = "Play 2.6 upgrade - Deprecate [Play 2.5 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
-        dependencyName        = "play",
-        version               = Version(2,6,0)
+        group                 = "com.typesafe.play",
+        artefact              = "play",
+        version               = Version(2,6,0,"2.6.0")
       ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.8 upgrade",
         initiativeDescription = "Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
-        dependencyName        = "play",
-        version               = Version(2,8,0)
+        group                 = "com.typesafe.play",
+        artefact              = "play",
+        version               = Version(2,8,0,"2.8.0")
       ),
       createUpgradeInitiative(
         initiativeName        = "Auth-client upgrade",
         initiativeDescription = "[CL250 Security upgrade required](https://confluence.tools.tax.service.gov.uk/x/RgpxDw)",
-        dependencyName        = "auth-client",
-        version               = Version(5,6,0)
+        group                 = "uk.gov.hmrc",
+        artefact              = "auth-client",
+        version               = Version(5,6,0,"5.6.0")
       )
     )
     Future.sequence(initiatives)
@@ -90,23 +93,19 @@ class PlatformInitiativesService @Inject()(
   def createUpgradeInitiative(
     initiativeName              : String,
     initiativeDescription       : String,
-    dependencyName              : String,
+    group                       : String,
+    artefact                    : String,
     version                     : Version,
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed",
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
-      serviceDependenciesConnector.getAllDependencies.map { dependencies =>
+    serviceDependenciesConnector.getServiceDependency(group, artefact)
+      .map { dependencies =>
         PlatformInitiative(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
-          currentProgress         = dependencies
-            .flatten(_.toDependencySeq
-              .filter(_.name == dependencyName)
-              .filter(_.currentVersion >= version)
-            ).length,
-          targetProgress          = dependencies
-            .flatten(_.toDependencySeq)
-            .count(_.name == dependencyName),
+          currentProgress         = dependencies.count(_.depVersion >= version.original),
+          targetProgress          = dependencies.length,
           completedLegend         = completedLegend,
           inProgressLegend        = inProgressLegend
         )
