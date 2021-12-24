@@ -66,7 +66,7 @@ class PlatformInitiativesControllerSpec
           inProgressLegend      = "Not completed"
         )
       )
-      when(mockPlatformInitiativesService.allPlatformInitiatives) thenReturn {
+      when(mockPlatformInitiativesService.allPlatformInitiatives()) thenReturn {
         Future.successful(mockInitiatives)
       }
       val result     : Future[Result]          = controller.allInitiatives.apply(FakeRequest())
@@ -87,6 +87,55 @@ class PlatformInitiativesControllerSpec
              "initiativeDescription" : "Update Dependency description",
              "currentProgress"       : 50,
              "targetProgress"        : 70,
+             "completedLegend"       : "Completed",
+             "inProgressLegend"      : "Not completed"
+           }
+          ]
+          """)
+    }
+  }
+
+  "PlatformInitiativesController.teamInitiatives" should {
+    "Return a 200 status code and correct JSON for a specified teams PlatformInitiatives" in new Setup {
+      val mockInitiatives: Seq[PlatformInitiative] = Seq(
+        PlatformInitiative(
+          initiativeName = "Test initiative",
+          initiativeDescription = "Test initiative description",
+          currentProgress       = 1,
+          targetProgress        = 1,
+          completedLegend       = "Completed",
+          inProgressLegend      = "Not completed"
+        ),
+        PlatformInitiative(
+          initiativeName        = "Update Dependency",
+          initiativeDescription = "Update Dependency description",
+          currentProgress       = 0,
+          targetProgress        = 1,
+          completedLegend       = "Completed",
+          inProgressLegend      = "Not completed"
+        )
+      )
+      when(mockPlatformInitiativesService.allPlatformInitiatives(Option("team-1"))) thenReturn {
+        Future.successful(mockInitiatives)
+      }
+      val result     : Future[Result]          = controller.teamInitiatives("team-1").apply(FakeRequest())
+      val initiatives: JsValue = contentAsJson(result)
+      status(result) mustBe 200
+      initiatives mustBe Json.parse(
+        """
+          [{
+             "initiativeName"        : "Test initiative",
+             "initiativeDescription" : "Test initiative description",
+             "currentProgress"       : 1,
+             "targetProgress"        : 1,
+             "completedLegend"       : "Completed",
+             "inProgressLegend"      : "Not completed"
+           },
+           {
+             "initiativeName"        : "Update Dependency",
+             "initiativeDescription" : "Update Dependency description",
+             "currentProgress"       : 0,
+             "targetProgress"        : 1,
              "completedLegend"       : "Completed",
              "inProgressLegend"      : "Not completed"
            }

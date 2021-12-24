@@ -23,7 +23,8 @@ case class SlugDependencies(
     slugName    : String,
     depGroup    : String,
     depArtefact : String,
-    depVersion  : String
+    depVersion  : String,
+    teams       : Seq[String]
   )
 
 object SlugDependencies {
@@ -32,6 +33,7 @@ object SlugDependencies {
         ~ (__ \ "depGroup"    ).format[String]
         ~ (__ \ "depArtefact" ).format[String]
         ~ (__ \ "depVersion"  ).format[String]
+        ~ (__ \ "teams"       ).format[Seq[String]]
         ) (SlugDependencies.apply, unlift(SlugDependencies.unapply))
     }
   }
