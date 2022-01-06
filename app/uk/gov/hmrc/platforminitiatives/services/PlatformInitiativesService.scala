@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ class PlatformInitiativesService @Inject()(
         initiativeName            = initiativeName,
         initiativeDescription     = initiativeDescription,
         currentProgress           = repos
+          // Filtering for exclusively owned repos
           .filter   (repositories => team.fold(true)(repositories.teamNames == Seq(_)))
           .filter   (!_.isArchived)
           .map      (_.defaultBranch)
@@ -113,6 +114,7 @@ class PlatformInitiativesService @Inject()(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
           currentProgress         = dependencies
+            // Filtering for exclusively owned repos
             .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
             .count(_.depVersion >= version.original),
           targetProgress          = dependencies
