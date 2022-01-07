@@ -1,7 +1,13 @@
 
 # platform-initiatives
+Service for retrieving information about custom defined initiatives across the platform.
 
-API for retrieving information about custom defined initiatives across the platform.
+This service takes data from various APIs and converts them into an initiative.
+
+## Adding new initiatives
+For new initiatives to be displayed on the catalogue, please tag `@PlatOps` on [#int-platform-tech](https://hmrcdigital.slack.com/archives/G0JJ0ADLY).
+We will need a description of what you want displayed, along with an API for us to write some Scala implementation 
+to make the initiative.
 
 # For developers:
 
