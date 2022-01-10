@@ -80,7 +80,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         artefact  = anyString(),
         range     = anyString())(any[HeaderCarrier])) thenReturn
         Future.successful(mockSlugDependencies)
-      val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives
+      val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
       val finalResult: Seq[PlatformInitiative] = Await.result(result, 1 second)
       finalResult.length shouldBe 4
     }
@@ -179,13 +179,15 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         slugName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency",
-        depVersion  = "1.0.0"
+        depVersion  = "1.0.0",
+        teams       = Seq("team-2")
       ),
       SlugDependencies(
         slugName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency",
-        depVersion  = "1.5.0"
+        depVersion  = "1.5.0",
+        teams       = Seq("team-1")
       )
     )
   }

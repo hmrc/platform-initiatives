@@ -36,7 +36,14 @@ class PlatformInitiativesController @Inject()(
 
   def allInitiatives: Action[AnyContent] = {
     Action.async {
-      platformInitiativesService.allPlatformInitiatives
+      platformInitiativesService.allPlatformInitiatives()
+        .map(initiative =>
+          Ok(Json.toJson(initiative)))
+    }
+  }
+  def teamInitiatives(team: String): Action[AnyContent] = {
+    Action.async {
+      platformInitiativesService.allPlatformInitiatives(Option(team))
         .map(initiative =>
           Ok(Json.toJson(initiative)))
     }

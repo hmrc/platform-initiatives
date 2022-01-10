@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,12 @@ class PlatformInitiativesService @Inject()(
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  def allPlatformInitiatives(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
+  def allPlatformInitiatives(team: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
     val initiatives = Seq(
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
         initiativeDescription = "To update default branch names - [Default branch tracker](https://catalogue.tax.service.gov.uk/defaultbranch).",
+        team                  = team,
         completedLegend       = "Updated",
         inProgressLegend      = "Master"
       ),
@@ -46,21 +47,24 @@ class PlatformInitiativesService @Inject()(
         initiativeDescription = "Play 2.6 upgrade - Deprecate [Play 2.5 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
         group                 = "com.typesafe.play",
         artefact              = "play",
-        version               = Version(2,6,0,"2.6.0")
+        version               = Version(2,6,0,"2.6.0"),
+        team                  = team
       ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.8 upgrade",
         initiativeDescription = "Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
         group                 = "com.typesafe.play",
         artefact              = "play",
-        version               = Version(2,8,0,"2.8.0")
+        version               = Version(2,8,0,"2.8.0"),
+        team                  = team
       ),
       createUpgradeInitiative(
         initiativeName        = "Auth-client upgrade",
         initiativeDescription = "[CL250 Security upgrade required](https://confluence.tools.tax.service.gov.uk/x/RgpxDw)",
         group                 = "uk.gov.hmrc",
         artefact              = "auth-client",
-        version               = Version(5,6,0,"5.6.0")
+        version               = Version(5,6,0,"5.6.0"),
+        team                  = team
       )
     )
     Future.sequence(initiatives)
@@ -69,6 +73,7 @@ class PlatformInitiativesService @Inject()(
   def createDefaultBranchInitiative(
      initiativeName              : String,
      initiativeDescription       : String,
+     team                        : Option[String] = None,
      completedLegend             : String = "Completed",
      inProgressLegend            : String = "Not Completed",
    )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
@@ -77,10 +82,13 @@ class PlatformInitiativesService @Inject()(
         initiativeName            = initiativeName,
         initiativeDescription     = initiativeDescription,
         currentProgress           = repos
+          // Filtering for exclusively owned repos
+          .filter   (repositories => team.fold(true)(repositories.teamNames == Seq(_)))
           .filter   (!_.isArchived)
           .map      (_.defaultBranch)
           .count    (_ != "master"),
         targetProgress            = repos
+          .filter   (repositories => team.fold(true)(repositories.teamNames == Seq(_)))
           .filter   (!_.isArchived)
           .map      (_.defaultBranch)
           .length,
@@ -96,6 +104,7 @@ class PlatformInitiativesService @Inject()(
     group                       : String,
     artefact                    : String,
     version                     : Version,
+    team                        : Option[String] = None,
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed",
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
@@ -104,8 +113,12 @@ class PlatformInitiativesService @Inject()(
         PlatformInitiative(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
-          currentProgress         = dependencies.count(_.depVersion >= version.original),
-          targetProgress          = dependencies.length,
+          currentProgress         = dependencies
+            // Filtering for exclusively owned repos
+            .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+            .count(_.depVersion >= version.original),
+          targetProgress          = dependencies
+            .count(dependencies => team.fold(true)(dependencies.teams == Seq(_))),
           completedLegend         = completedLegend,
           inProgressLegend        = inProgressLegend
         )
