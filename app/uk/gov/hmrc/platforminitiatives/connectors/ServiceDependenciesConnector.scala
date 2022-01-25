@@ -46,9 +46,9 @@ class ServiceDependenciesConnector @Inject() (
   }
 
   def getServiceDependency(
-    group     : String,
-    artefact  : String,
-    range     : String = "[0.0.0,)"
+    group       : String,
+    artefact    : String,
+    range       : String = "[0.0.0,)",
   )(implicit hc: HeaderCarrier): Future[Seq[SlugDependencies]] = {
     httpClient.GET[Seq[SlugDependencies]](
       url"$servicesDependenciesBaseUrl/api/serviceDeps?group=$group&artefact=$artefact&versionRange=$range"
