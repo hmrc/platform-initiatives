@@ -34,7 +34,6 @@ class PlatformInitiativesService @Inject()(
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   def allPlatformInitiatives(team: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
-    println(team)
     val initiatives = Seq(
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
