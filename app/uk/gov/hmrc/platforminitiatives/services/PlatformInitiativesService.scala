@@ -118,7 +118,7 @@ class PlatformInitiativesService @Inject()(
     artefact                    : String,
     version                     : Version,
     team                        : Option[String] = None,
-    environment                 : Option[Environment] = Option(Environment.Production),
+    environment                 : Option[Environment] = Some(Environment.Production),
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed"
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
