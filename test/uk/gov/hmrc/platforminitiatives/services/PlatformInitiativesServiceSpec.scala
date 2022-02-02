@@ -55,7 +55,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       when(mockServiceDependenciesConnector.getServiceDependency(
         group       = anyString(),
         artefact    = anyString(),
-        environment = anyString(),
+        environment = any(),
         range       = anyString())(any[HeaderCarrier])) thenReturn
         Future.successful(mockSlugDependencies)
       val result: Future[PlatformInitiative] = platformInitiativesService.createUpgradeInitiative(
@@ -79,7 +79,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       when(mockServiceDependenciesConnector.getServiceDependency(
         group       = anyString(),
         artefact    = anyString(),
-        environment = anyString(),
+        environment = any(),
         range       = anyString())(any[HeaderCarrier])) thenReturn
         Future.successful(mockSlugDependencies)
       val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
