@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
-import play.api.mvc.{PathBindable, QueryStringBindable}
-
 sealed trait Environment { def asString: String; def displayString: String }
 
 object Environment {
@@ -39,21 +37,3 @@ object Environment {
   def parse(s: String): Option[Environment] =
     values.find(_.asString == s)
 }
-
-trait SlugInfoFlag  { def asString: String; def displayString: String }
-object SlugInfoFlag {
-  case object Latest extends SlugInfoFlag { override def asString = "latest"; override def displayString = "Latest" }
-  case class ForEnvironment(env: Environment) extends SlugInfoFlag { override def asString = env.asString; override def displayString = env.displayString }
-
-  val values: List[SlugInfoFlag] =
-    Latest :: Environment.values.map(ForEnvironment.apply)
-
-  implicit val ordering = new Ordering[SlugInfoFlag] {
-    def compare(x: SlugInfoFlag, y: SlugInfoFlag): Int =
-      values.indexOf(x).compare(values.indexOf(y))
-  }
-
-  def parse(s: String): Option[SlugInfoFlag] =
-    values.find(_.asString == s)
-}
-
