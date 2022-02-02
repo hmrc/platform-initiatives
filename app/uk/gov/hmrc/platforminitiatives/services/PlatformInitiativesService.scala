@@ -19,7 +19,7 @@ package uk.gov.hmrc.platforminitiatives.services
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Version}
+import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -69,7 +69,7 @@ class PlatformInitiativesService @Inject()(
         artefact              = "play",
         version               = Version(2,8,0,"2.8.0"),
         team                  = team,
-        environment           = "latest"
+        environment           = None
       ),
       createUpgradeInitiative(
         initiativeName        = "Auth-client upgrade",
@@ -118,7 +118,7 @@ class PlatformInitiativesService @Inject()(
     artefact                    : String,
     version                     : Version,
     team                        : Option[String] = None,
-    environment                 : String = "production",
+    environment                 : Option[Environment] = Option(Environment.Production),
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed"
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
