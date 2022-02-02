@@ -19,7 +19,7 @@ package uk.gov.hmrc.platforminitiatives.services
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Version}
+import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -55,12 +55,21 @@ class PlatformInitiativesService @Inject()(
         team                  = team
       ),
       createUpgradeInitiative(
-        initiativeName        = "Play 2.8 upgrade",
+        initiativeName        = "Play 2.8 upgrade - Production",
         initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope=compile&versionRange=%5B0.0.0%2C2.8.0%29&asCsv=false) | [Confluence](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
         group                 = "com.typesafe.play",
         artefact              = "play",
         version               = Version(2,8,0,"2.8.0"),
         team                  = team
+      ),
+      createUpgradeInitiative(
+        initiativeName        = "Play 2.8 upgrade - Latest",
+        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope=compile&versionRange=%5B0.0.0%2C2.8.0%29&asCsv=false) | [Confluence](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
+        group                 = "com.typesafe.play",
+        artefact              = "play",
+        version               = Version(2,8,0,"2.8.0"),
+        team                  = team,
+        environment           = None
       ),
       createUpgradeInitiative(
         initiativeName        = "Auth-client upgrade",
@@ -109,10 +118,11 @@ class PlatformInitiativesService @Inject()(
     artefact                    : String,
     version                     : Version,
     team                        : Option[String] = None,
+    environment                 : Option[Environment] = Some(Environment.Production),
     completedLegend             : String = "Completed",
-    inProgressLegend            : String = "Not Completed",
+    inProgressLegend            : String = "Not Completed"
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
-    serviceDependenciesConnector.getServiceDependency(group, artefact)
+    serviceDependenciesConnector.getServiceDependency(group, artefact, environment)
       .map { dependencies =>
         PlatformInitiative(
           initiativeName          = initiativeName,
