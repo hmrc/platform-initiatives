@@ -38,32 +38,6 @@ object Environment {
 
   def parse(s: String): Option[Environment] =
     values.find(_.asString == s)
-
-  implicit val pathBindable: PathBindable[Environment] =
-    new PathBindable[Environment] {
-      override def bind(key: String, value: String): Either[String, Environment] =
-        parse(value).toRight(s"Invalid Environment '$value'")
-
-      override def unbind(key: String, value: Environment): String =
-        value.asString
-    }
-
-  implicit val queryStringBindable: QueryStringBindable[Environment] =
-    new QueryStringBindable[Environment] {
-      private val Name = "environment"
-
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Environment]] =
-        params.get(Name).map { values =>
-          values.toList match {
-            case Nil         => Left("missing environment value")
-            case head :: Nil => pathBindable.bind(key, head)
-            case _           => Left("too many environment values")
-          }
-        }
-
-      override def unbind(key: String, value: Environment): String =
-        s"$Name=${value.asString}"
-    }
 }
 
 trait SlugInfoFlag  { def asString: String; def displayString: String }
