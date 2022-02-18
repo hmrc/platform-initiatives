@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import play.api.mvc.{Result, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.models.PlatformInitiative
+import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress}
 import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,16 +52,20 @@ class PlatformInitiativesControllerSpec
         PlatformInitiative(
           initiativeName = "Test initiative",
           initiativeDescription = "Test initiative description",
-          currentProgress       = 10,
-          targetProgress        = 100,
+          progress = Progress(
+            currentProgress       = 10,
+            targetProgress        = 100
+          ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed"
         ),
         PlatformInitiative(
           initiativeName        = "Update Dependency",
           initiativeDescription = "Update Dependency description",
-          currentProgress       = 50,
-          targetProgress        = 70,
+          progress = Progress(
+            currentProgress       = 50,
+            targetProgress        = 70
+          ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed"
         )
@@ -77,16 +81,20 @@ class PlatformInitiativesControllerSpec
           [{
              "initiativeName"        : "Test initiative",
              "initiativeDescription" : "Test initiative description",
-             "currentProgress"       : 10,
-             "targetProgress"        : 100,
+             "progress"              : {
+                "currentProgress"       : 10,
+                "targetProgress"        : 100
+             },
              "completedLegend"       : "Completed",
              "inProgressLegend"      : "Not completed"
            },
            {
              "initiativeName"        : "Update Dependency",
              "initiativeDescription" : "Update Dependency description",
-             "currentProgress"       : 50,
-             "targetProgress"        : 70,
+             "progress"              : {
+                "currentProgress"       : 50,
+                "targetProgress"        : 70
+             },
              "completedLegend"       : "Completed",
              "inProgressLegend"      : "Not completed"
            }
@@ -101,16 +109,20 @@ class PlatformInitiativesControllerSpec
         PlatformInitiative(
           initiativeName = "Test initiative",
           initiativeDescription = "Test initiative description",
-          currentProgress       = 1,
-          targetProgress        = 1,
+          progress = Progress(
+            currentProgress       = 1,
+            targetProgress        = 1
+          ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed"
         ),
         PlatformInitiative(
           initiativeName        = "Update Dependency",
           initiativeDescription = "Update Dependency description",
-          currentProgress       = 0,
-          targetProgress        = 1,
+          progress = Progress(
+            currentProgress       = 0,
+            targetProgress        = 1
+          ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed"
         )
@@ -126,16 +138,20 @@ class PlatformInitiativesControllerSpec
           [{
              "initiativeName"        : "Test initiative",
              "initiativeDescription" : "Test initiative description",
-             "currentProgress"       : 1,
-             "targetProgress"        : 1,
+             "progress"              : {
+                "currentProgress"    : 1,
+                "targetProgress"     : 1
+             },
              "completedLegend"       : "Completed",
              "inProgressLegend"      : "Not completed"
            },
            {
              "initiativeName"        : "Update Dependency",
              "initiativeDescription" : "Update Dependency description",
-             "currentProgress"       : 0,
-             "targetProgress"        : 1,
+             "progress"              : {
+                 "currentProgress"       : 0,
+                 "targetProgress"        : 1
+             },
              "completedLegend"       : "Completed",
              "inProgressLegend"      : "Not completed"
            }

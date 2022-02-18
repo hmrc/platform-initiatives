@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       )
       val finalResult: PlatformInitiative = result.futureValue
 
-      finalResult.currentProgress shouldBe 2
+      finalResult.progress.currentProgress shouldBe 2
     }
   }
 
@@ -68,7 +68,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       val finalResult: PlatformInitiative = Await.result(result, 1 second)
       finalResult shouldBe a [PlatformInitiative]
       finalResult.initiativeName shouldBe "Test"
-      finalResult.currentProgress shouldBe 2
+      finalResult.progress.currentProgress shouldBe 2
     }
   }
 

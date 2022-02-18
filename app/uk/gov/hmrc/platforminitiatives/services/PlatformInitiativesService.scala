@@ -19,7 +19,7 @@ package uk.gov.hmrc.platforminitiatives.services
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Version}
+import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Progress, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -94,17 +94,19 @@ class PlatformInitiativesService @Inject()(
       PlatformInitiative(
         initiativeName            = initiativeName,
         initiativeDescription     = initiativeDescription,
-        currentProgress           = repos
-          // Filtering for exclusively owned repos
-          .filter   (repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-          .filter   (!_.isArchived)
-          .map      (_.defaultBranch)
-          .count    (_ != "master"),
-        targetProgress            = repos
-          .filter   (repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-          .filter   (!_.isArchived)
-          .map      (_.defaultBranch)
-          .length,
+        progress                  = Progress(
+          currentProgress = repos
+            // Filtering for exclusively owned repos
+            .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
+            .filter(!_.isArchived)
+            .map(_.defaultBranch)
+            .count(_ != "master"),
+          targetProgress = repos
+            .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
+            .filter(!_.isArchived)
+            .map(_.defaultBranch)
+            .length
+        ),
         completedLegend           = completedLegend,
         inProgressLegend          = inProgressLegend
       )
@@ -127,12 +129,14 @@ class PlatformInitiativesService @Inject()(
         PlatformInitiative(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
-          currentProgress         = dependencies
-            // Filtering for exclusively owned repos
-            .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
-            .count(_.depVersion >= version.original),
-          targetProgress          = dependencies
-            .count(dependencies => team.fold(true)(dependencies.teams == Seq(_))),
+          progress                = Progress(
+            currentProgress = dependencies
+              // Filtering for exclusively owned repos
+              .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+              .count(_.depVersion >= version.original),
+            targetProgress  = dependencies
+              .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+          ),
           completedLegend         = completedLegend,
           inProgressLegend        = inProgressLegend
         )
