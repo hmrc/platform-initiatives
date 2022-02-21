@@ -45,7 +45,7 @@ class PlatformInitiativesController @Inject()(
     Action.async {
       platformInitiativesService.allPlatformInitiatives(Option(team))
         .map(initiative =>
-          Ok(Json.toJson(initiative)))
+          Ok(Json.toJson(initiative.filter(_.progress.target != 0))))
     }
   }
 }
