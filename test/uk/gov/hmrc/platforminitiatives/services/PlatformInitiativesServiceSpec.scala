@@ -46,7 +46,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       )
       val finalResult: PlatformInitiative = result.futureValue
 
-      finalResult.progress.currentProgress shouldBe 2
+      finalResult.progress.current shouldBe 2
     }
   }
 
@@ -68,7 +68,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       val finalResult: PlatformInitiative = Await.result(result, 1 second)
       finalResult shouldBe a [PlatformInitiative]
       finalResult.initiativeName shouldBe "Test"
-      finalResult.progress.currentProgress shouldBe 2
+      finalResult.progress.current shouldBe 2
     }
   }
 

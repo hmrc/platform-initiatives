@@ -19,6 +19,19 @@ package uk.gov.hmrc.platforminitiatives.models
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{OFormat, __}
 
+case class Progress(
+  current : Int,
+  target  : Int
+)
+
+object Progress {
+  implicit val format: OFormat[Progress] = {
+    ((__ \ "current").format[Int]
+      ~ (__ \ "target").format[Int]
+      )(Progress.apply,unlift(Progress.unapply))
+  }
+}
+
 
 case class PlatformInitiative(
   initiativeName            : String,

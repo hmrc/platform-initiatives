@@ -95,13 +95,13 @@ class PlatformInitiativesService @Inject()(
         initiativeName            = initiativeName,
         initiativeDescription     = initiativeDescription,
         progress                  = Progress(
-          currentProgress = repos
+          current = repos
             // Filtering for exclusively owned repos
             .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
             .filter(!_.isArchived)
             .map(_.defaultBranch)
             .count(_ != "master"),
-          targetProgress = repos
+          target = repos
             .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
             .filter(!_.isArchived)
             .map(_.defaultBranch)
@@ -130,11 +130,11 @@ class PlatformInitiativesService @Inject()(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
           progress                = Progress(
-            currentProgress = dependencies
+            current = dependencies
               // Filtering for exclusively owned repos
               .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
               .count(_.depVersion >= version.original),
-            targetProgress  = dependencies
+            target  = dependencies
               .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
           ),
           completedLegend         = completedLegend,
