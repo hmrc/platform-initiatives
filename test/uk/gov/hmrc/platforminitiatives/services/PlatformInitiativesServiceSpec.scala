@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Dependency, PlatformInitiative, SlugDependencies, Version}
+import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Dependency, PlatformInitiative, Progress, SlugDependencies, Version}
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,7 +46,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       )
       val finalResult: PlatformInitiative = result.futureValue
 
-      finalResult.currentProgress shouldBe 2
+      finalResult.progress shouldBe Progress(2,3)
     }
   }
 
@@ -68,7 +68,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
       val finalResult: PlatformInitiative = Await.result(result, 1 second)
       finalResult shouldBe a [PlatformInitiative]
       finalResult.initiativeName shouldBe "Test"
-      finalResult.currentProgress shouldBe 2
+      finalResult.progress shouldBe Progress(2,2)
     }
   }
 
