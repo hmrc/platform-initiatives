@@ -80,7 +80,7 @@ class PlatformInitiativesService @Inject()(
         team                  = team
       )
     )
-    Future.sequence(initiatives)
+    Future.sequence(initiatives).map(_.filter(_.progress.target != 0))
   }
 
   def createDefaultBranchInitiative(
