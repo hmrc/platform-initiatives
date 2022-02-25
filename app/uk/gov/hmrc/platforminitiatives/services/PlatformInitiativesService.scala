@@ -65,7 +65,7 @@ class PlatformInitiativesService @Inject()(
       ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.8 upgrade - Latest",
-        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope=compile&versionRange=%5B0.0.0%2C2.8.0" + "\\)" + "&asCsv=false" + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
+        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope=compile&versionRange=[0.0.0,2.8.0" + "\\)" + "&asCsv=false" + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
         group                 = "com.typesafe.play",
         artefact              = "play",
         version               = Version(2,8,0,"2.8.0"),
@@ -74,7 +74,7 @@ class PlatformInitiativesService @Inject()(
       ),
       createUpgradeInitiative(
         initiativeName        = "Auth-client upgrade",
-        initiativeDescription = s"[CL250 Security upgrade required](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&scope=compile&versionRange=%5B0.0.0%2C5.6.0" + "\\)" + "&asCsv=false" + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/x/RgpxDw" + ").",
+        initiativeDescription = s"[CL250 Security upgrade required](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,5.6.0" + "\\)" + "&asCsv=false" + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/x/RgpxDw" + ").",
         group                 = "uk.gov.hmrc",
         artefact              = "auth-client",
         version               = Version(5,6,0,"5.6.0"),
