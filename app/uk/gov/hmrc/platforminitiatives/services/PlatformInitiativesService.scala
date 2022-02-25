@@ -21,6 +21,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Progress, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.http.StringContextOps
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,14 +42,14 @@ class PlatformInitiativesService @Inject()(
     val initiatives = Seq(
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
-        initiativeDescription = s"To update default branch names - [Default Branch Tracker](https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master) | [Confluence](https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default+Branch+Migration%3A+How+To).",
         team                  = team,
+        initiativeDescription = s"To update default branch names - [Default Branch Tracker](" + url"https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master" + ") | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default+Branch+Migration%3A+How+To" + ").",
         completedLegend       = "Updated",
         inProgressLegend      = "Master"
       ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.6 upgrade",
-        initiativeDescription = s"Play 2.6 upgrade - Deprecate [Play 2.5 and below](https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope=compile&versionRange=%5B0.0.0%2C2.6.0%5D&asCsv=false) | [Confluence](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
+        initiativeDescription = s"Play 2.6 upgrade - Deprecate [Play 2.5 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,2.6.0" + "\\)" + "&asCsv=false" + ") | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
         group                 = "com.typesafe.play",
         artefact              = "play",
         version               = Version(2,6,0,"2.6.0"),
@@ -56,7 +57,7 @@ class PlatformInitiativesService @Inject()(
       ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.8 upgrade - Production",
-        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope=compile&versionRange=%5B0.0.0%2C2.8.0%29&asCsv=false) | [Confluence](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
+        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,2.8.0" + "\\)" + "&asCsv=false" + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
         group                 = "com.typesafe.play",
         artefact              = "play",
         version               = Version(2,8,0,"2.8.0"),
@@ -64,7 +65,7 @@ class PlatformInitiativesService @Inject()(
       ),
       createUpgradeInitiative(
         initiativeName        = "Play 2.8 upgrade - Latest",
-        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope=compile&versionRange=%5B0.0.0%2C2.8.0%29&asCsv=false) | [Confluence](https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511).",
+        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope=compile&versionRange=%5B0.0.0%2C2.8.0" + "\\)" + "&asCsv=false" + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
         group                 = "com.typesafe.play",
         artefact              = "play",
         version               = Version(2,8,0,"2.8.0"),
@@ -73,7 +74,7 @@ class PlatformInitiativesService @Inject()(
       ),
       createUpgradeInitiative(
         initiativeName        = "Auth-client upgrade",
-        initiativeDescription = s"[CL250 Security upgrade required](https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&scope=compile&versionRange=%5B0.0.0%2C5.6.0%29&asCsv=false) | [Confluence](https://confluence.tools.tax.service.gov.uk/x/RgpxDw).",
+        initiativeDescription = s"[CL250 Security upgrade required](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&scope=compile&versionRange=%5B0.0.0%2C5.6.0" + "\\)" + "&asCsv=false" + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/x/RgpxDw" + ").",
         group                 = "uk.gov.hmrc",
         artefact              = "auth-client",
         version               = Version(5,6,0,"5.6.0"),
