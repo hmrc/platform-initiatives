@@ -43,7 +43,7 @@ class PlatformInitiativesService @Inject()(
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
         team                  = team,
-        initiativeDescription = s"To update default branch names - [Default Branch Tracker](" + url"https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master" + ") | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default+Branch+Migration%3A+How+To" + ").",
+        initiativeDescription = s"To update default branch names - [Default Branch Tracker](" + url"https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master" + ") | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default+Branch+Migration:+How+To" + ").",
         completedLegend       = "Updated",
         inProgressLegend      = "Master"
       ),
