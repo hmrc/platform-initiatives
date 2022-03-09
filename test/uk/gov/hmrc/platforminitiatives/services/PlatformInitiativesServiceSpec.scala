@@ -17,22 +17,30 @@
 package uk.gov.hmrc.platforminitiatives.services
 
 import org.mockito.MockitoSugar
-import org.mockito.ArgumentMatchers.{any, anyString}
-import org.scalatest.concurrent.ScalaFutures
+import org.mockito.ArgumentMatchersSugar
+import org.mockito.ArgumentMatchers.anyString
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Dependency, PlatformInitiative, Progress, SlugDependencies, Version}
+import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, SlugDependencies, Version}
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
-class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with MockitoSugar with ScalaFutures {
+class PlatformInitiativesServiceSpec
+  extends AnyWordSpec
+    with Matchers
+    with MockitoSugar
+    with ArgumentMatchersSugar
+    with ScalaFutures
+    with IntegrationPatience
+  {
 
   "createDefaultBranchInitiative" should {
     "return an initiative for DefaultBranches where branch name is not updated" in new Setup {
@@ -45,7 +53,6 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         inProgressLegend      = "Master"
       )
       val finalResult: PlatformInitiative = result.futureValue
-
       finalResult.progress shouldBe Progress(2,3)
     }
   }
@@ -53,10 +60,10 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
   "createUpgradeInitiative" should {
     "return an initiative for a Dependency Upgrade" in new Setup {
       when(mockServiceDependenciesConnector.getServiceDependency(
-        group       = anyString(),
-        artefact    = anyString(),
-        environment = any(),
-        range       = anyString())(any[HeaderCarrier])) thenReturn
+        group       = anyString,
+        artefact    = anyString,
+        environment = any,
+        range       = anyString)(any[HeaderCarrier])) thenReturn
         Future.successful(mockSlugDependencies)
       val result: Future[PlatformInitiative] = platformInitiativesService.createUpgradeInitiative(
         initiativeName        = "Test",
@@ -65,7 +72,7 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         artefact              = "Dep1",
         version               = Version(0, 2, 0)
       )
-      val finalResult: PlatformInitiative = Await.result(result, 1 second)
+      val finalResult: PlatformInitiative = result.futureValue
       finalResult shouldBe a [PlatformInitiative]
       finalResult.initiativeName shouldBe "Test"
       finalResult.progress shouldBe Progress(2,2)
@@ -74,26 +81,28 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
 
   "allPlatformInitiatives" should {
     "return a future sequence of PlatformInitiatives" in new Setup {
+      when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental")) thenReturn true
       when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier])) thenReturn
         Future.successful(mockRepositories)
       when(mockServiceDependenciesConnector.getServiceDependency(
-        group       = anyString(),
-        artefact    = anyString(),
-        environment = any(),
-        range       = anyString())(any[HeaderCarrier])) thenReturn
-        Future.successful(mockSlugDependencies)
+        group       = anyString,
+        artefact    = anyString,
+        environment = any,
+        range       = anyString)(any[HeaderCarrier])) thenReturn
+          Future.successful(mockSlugDependencies)
       val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
-      val finalResult: Seq[PlatformInitiative] = Await.result(result, 1 second)
-      finalResult.length shouldBe 5
+      val finalResult: Seq[PlatformInitiative] = result.futureValue
+      finalResult.length shouldBe 7
     }
   }
 
   private[this] trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
+    val mockConfiguration: Configuration = mock[Configuration]
     val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
     val mockServiceDependenciesConnector: ServiceDependenciesConnector = mock[ServiceDependenciesConnector]
     val mockControllerComponents: ControllerComponents = mock[ControllerComponents]
-    val platformInitiativesService: PlatformInitiativesService = new PlatformInitiativesService(mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
+    val platformInitiativesService: PlatformInitiativesService = new PlatformInitiativesService(mockConfiguration, mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
 
     val mockRepositories: Seq[RepositoryDisplayDetails] = Seq(
       RepositoryDisplayDetails(
@@ -127,53 +136,6 @@ class PlatformInitiativesServiceSpec extends AnyWordSpec with Matchers with Mock
         isArchived = true,
         teamNames = Seq("Team-2"),
         defaultBranch = "master"
-      )
-    )
-    val mockDependencies = Seq(
-      Dependencies(
-        repositoryName = "repository1",
-        libraryDependencies = Seq(
-          Dependency(
-            name = "Dep1",
-            group = "Group1",
-            currentVersion = Version(0, 2, 0),
-            latestVersion = Option(Version(0, 2, 0))
-          ),
-          Dependency(
-            name = "Dep2",
-            group = "Group2",
-            currentVersion = Version(1, 0, 1),
-            latestVersion = Option(Version(1, 0, 1))
-          )
-        ),
-        sbtPluginsDependencies = Seq(),
-        otherDependencies = Seq()
-      ),
-      Dependencies(
-        repositoryName = "repository2",
-        libraryDependencies = Seq(
-          Dependency(
-            name = "Dep2",
-            group = "Group2",
-            currentVersion = Version(1, 0, 1),
-            latestVersion = Option(Version(1, 0, 1))
-          )
-        ),
-        sbtPluginsDependencies = Seq(),
-        otherDependencies = Seq()
-      ),
-      Dependencies(
-        repositoryName = "repository3",
-        libraryDependencies = Seq(
-          Dependency(
-            name = "Dep1",
-            group = "Group1",
-            currentVersion = Version(1, 0, 1),
-            latestVersion = Option(Version(1, 0, 1))
-          )
-        ),
-        sbtPluginsDependencies = Seq(),
-        otherDependencies = Seq()
       )
     )
     val mockSlugDependencies = Seq(
