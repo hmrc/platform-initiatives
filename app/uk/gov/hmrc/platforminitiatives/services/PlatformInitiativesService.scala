@@ -101,10 +101,7 @@ class PlatformInitiativesService @Inject()(
         experimental          = true
       )
     )
-    if(displayExperimentalInitiatives)
-      Future.sequence(initiatives).map(_.filter(_.progress.target != 0))
-    else
-      Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filterNot(_.experimental))
+    Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
   }
 
   def createDefaultBranchInitiative(
