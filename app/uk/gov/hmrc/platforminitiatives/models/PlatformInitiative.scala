@@ -38,7 +38,8 @@ case class PlatformInitiative(
   initiativeDescription     : String,
   progress                  : Progress,
   completedLegend           : String,
-  inProgressLegend          : String
+  inProgressLegend          : String,
+  experimental              : Boolean
 )
 
 object PlatformInitiative {
@@ -49,6 +50,7 @@ object PlatformInitiative {
       ~ (__ \ "progress"              ).format[Progress]
       ~ (__ \ "completedLegend"       ).format[String]
       ~ (__ \ "inProgressLegend"      ).format[String]
+      ~ (__ \ "experimental"          ).format[Boolean]
       ) (PlatformInitiative.apply, unlift(PlatformInitiative.unapply))
   }
 }

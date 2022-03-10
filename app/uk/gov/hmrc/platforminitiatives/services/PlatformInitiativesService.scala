@@ -34,9 +34,9 @@ class PlatformInitiativesService @Inject()(
   ) extends BackendController(cc) {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val displayExperimentalInitiatives: Boolean = configuration.get[Boolean]("initiatives.service.includeExperimental")
 
   def allPlatformInitiatives(team: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
-    val displayExperimentalInitiatives: Boolean = configuration.get[Boolean]("initiatives.service.includeExperimental")
     val teamName = team match {
       case None => ""
       case Some(team) => team
@@ -89,7 +89,7 @@ class PlatformInitiativesService @Inject()(
         artefact              = "scala-library",
         version               = Version(2,12,0,"2.12.0"),
         team                  = team,
-        experimental          = displayExperimentalInitiatives
+        experimental          = true
       ),
       createUpgradeInitiative(
         initiativeName        = "Scala 2.13 Upgrade",
@@ -98,10 +98,13 @@ class PlatformInitiativesService @Inject()(
         artefact              = "scala-library",
         version               = Version(2,13,0,"2.13.0"),
         team                  = team,
-        experimental          = displayExperimentalInitiatives
+        experimental          = true
       )
     )
+    if(displayExperimentalInitiatives)
       Future.sequence(initiatives).map(_.filter(_.progress.target != 0))
+    else
+      Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filterNot(_.experimental))
   }
 
   def createDefaultBranchInitiative(
@@ -110,7 +113,7 @@ class PlatformInitiativesService @Inject()(
      team                        : Option[String] = None,
      completedLegend             : String = "Completed",
      inProgressLegend            : String = "Not Completed",
-     experimental                : Boolean = true
+     experimental                : Boolean = false
    )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
     teamsAndRepositoriesConnector.allDefaultBranches.map { repos =>
       PlatformInitiative(
@@ -118,22 +121,20 @@ class PlatformInitiativesService @Inject()(
         initiativeDescription     = initiativeDescription,
         progress                  = Progress(
           current = repos
-            // Filtering for exclusively owned repos
-            .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-            .filter(!_.isArchived)
-            .map(_.defaultBranch)
-            .count(_ != "master"),
-          target = if (experimental)
-            repos
-              .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-              .filter(!_.isArchived)
-              .map(_.defaultBranch)
-              .length
-          // An initiative with 0 target gets filtered out
-            else 0
+                      // Filtering for exclusively owned repos
+                      .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
+                      .filter(!_.isArchived)
+                      .map(_.defaultBranch)
+                      .count(_ != "master"),
+          target = repos
+                      .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
+                      .filter(!_.isArchived)
+                      .map(_.defaultBranch)
+                      .length
         ),
         completedLegend           = completedLegend,
-        inProgressLegend          = inProgressLegend
+        inProgressLegend          = inProgressLegend,
+        experimental              = experimental
       )
     }
   }
@@ -148,7 +149,7 @@ class PlatformInitiativesService @Inject()(
     environment                 : Option[Environment] = Some(Environment.Production),
     completedLegend             : String = "Completed",
     inProgressLegend            : String = "Not Completed",
-    experimental                : Boolean = true
+    experimental                : Boolean = false
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
     serviceDependenciesConnector.getServiceDependency(group, artefact, environment)
       .map { dependencies =>
@@ -157,17 +158,15 @@ class PlatformInitiativesService @Inject()(
           initiativeDescription   = initiativeDescription,
           progress                = Progress(
             current = dependencies
-              // Filtering for exclusively owned repos
-              .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
-              .count(_.depVersion >= version.original),
-            target  = if(experimental)
-              dependencies
-                .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
-            // An initiative with 0 target gets filtered out
-             else 0
+                        // Filtering for exclusively owned repos
+                        .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+                        .count(_.depVersion >= version.original),
+            target  = dependencies
+                        .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
           ),
           completedLegend         = completedLegend,
-          inProgressLegend        = inProgressLegend
+          inProgressLegend        = inProgressLegend,
+          experimental            = experimental
         )
       }
     }
