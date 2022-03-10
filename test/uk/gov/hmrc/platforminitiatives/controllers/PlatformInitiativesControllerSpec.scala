@@ -88,8 +88,7 @@ class PlatformInitiativesControllerSpec
                 "target"        : 100
              },
              "completedLegend"       : "Completed",
-             "inProgressLegend"      : "Not completed",
-             "experimental"          : false
+             "inProgressLegend"      : "Not completed"
            },
            {
              "initiativeName"        : "Update Dependency",
@@ -99,8 +98,7 @@ class PlatformInitiativesControllerSpec
                 "target"        : 70
              },
              "completedLegend"       : "Completed",
-             "inProgressLegend"      : "Not completed",
-             "experimental"          : false
+             "inProgressLegend"      : "Not completed"
            }
           ]
           """)
@@ -149,8 +147,7 @@ class PlatformInitiativesControllerSpec
                 "target"     : 1
              },
              "completedLegend"       : "Completed",
-             "inProgressLegend"      : "Not completed",
-             "experimental"          : false
+             "inProgressLegend"      : "Not completed"
            },
            {
              "initiativeName"        : "Update Dependency",
@@ -160,8 +157,7 @@ class PlatformInitiativesControllerSpec
                  "target"    : 1
              },
              "completedLegend"       : "Completed",
-             "inProgressLegend"      : "Not completed",
-             "experimental"          : false
+             "inProgressLegend"      : "Not completed"
            }
           ]
           """)
