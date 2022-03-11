@@ -16,23 +16,25 @@
 
 package uk.gov.hmrc.platforminitiatives.services
 
+import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Progress, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.http.StringContextOps
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class PlatformInitiativesService @Inject()(
+    configuration                 : Configuration,
     teamsAndRepositoriesConnector : TeamsAndRepositoriesConnector,
     serviceDependenciesConnector  : ServiceDependenciesConnector,
     cc                            : ControllerComponents
   ) extends BackendController(cc) {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val displayExperimentalInitiatives: Boolean = configuration.get[Boolean]("initiatives.service.includeExperimental")
 
   def allPlatformInitiatives(team: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
     val teamName = team match {
@@ -79,9 +81,27 @@ class PlatformInitiativesService @Inject()(
         artefact              = "auth-client",
         version               = Version(5,6,0,"5.6.0"),
         team                  = team
+      ),
+      createUpgradeInitiative(
+        initiativeName        = "Scala 2.12 Upgrade",
+        initiativeDescription = s"Scala 2.12 upgrade - Deprecate [Scala 2.11 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,2.8.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
+        group                 = "org.scala-lang",
+        artefact              = "scala-library",
+        version               = Version(2,12,0,"2.12.0"),
+        team                  = team,
+        experimental          = true
+      ),
+      createUpgradeInitiative(
+        initiativeName        = "Scala 2.13 Upgrade",
+        initiativeDescription = s"Scala 2.13 upgrade - Deprecate [Scala 2.12 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,2.8.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
+        group                 = "org.scala-lang",
+        artefact              = "scala-library",
+        version               = Version(2,13,0,"2.13.0"),
+        team                  = team,
+        experimental          = true
       )
     )
-    Future.sequence(initiatives).map(_.filter(_.progress.target != 0))
+    Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
   }
 
   def createDefaultBranchInitiative(
@@ -90,6 +110,7 @@ class PlatformInitiativesService @Inject()(
      team                        : Option[String] = None,
      completedLegend             : String = "Completed",
      inProgressLegend            : String = "Not Completed",
+     experimental                : Boolean = false
    )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
     teamsAndRepositoriesConnector.allDefaultBranches.map { repos =>
       PlatformInitiative(
@@ -97,19 +118,20 @@ class PlatformInitiativesService @Inject()(
         initiativeDescription     = initiativeDescription,
         progress                  = Progress(
           current = repos
-            // Filtering for exclusively owned repos
-            .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-            .filter(!_.isArchived)
-            .map(_.defaultBranch)
-            .count(_ != "master"),
+                      // Filtering for exclusively owned repos
+                      .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
+                      .filter(!_.isArchived)
+                      .map(_.defaultBranch)
+                      .count(_ != "master"),
           target = repos
-            .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-            .filter(!_.isArchived)
-            .map(_.defaultBranch)
-            .length
+                      .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
+                      .filter(!_.isArchived)
+                      .map(_.defaultBranch)
+                      .length
         ),
         completedLegend           = completedLegend,
-        inProgressLegend          = inProgressLegend
+        inProgressLegend          = inProgressLegend,
+        experimental              = experimental
       )
     }
   }
@@ -123,7 +145,8 @@ class PlatformInitiativesService @Inject()(
     team                        : Option[String] = None,
     environment                 : Option[Environment] = Some(Environment.Production),
     completedLegend             : String = "Completed",
-    inProgressLegend            : String = "Not Completed"
+    inProgressLegend            : String = "Not Completed",
+    experimental                : Boolean = false
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
     serviceDependenciesConnector.getServiceDependency(group, artefact, environment)
       .map { dependencies =>
@@ -132,14 +155,15 @@ class PlatformInitiativesService @Inject()(
           initiativeDescription   = initiativeDescription,
           progress                = Progress(
             current = dependencies
-              // Filtering for exclusively owned repos
-              .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
-              .count(_.depVersion >= version.original),
+                        // Filtering for exclusively owned repos
+                        .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+                        .count(_.depVersion >= version.original),
             target  = dependencies
-              .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+                        .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
           ),
           completedLegend         = completedLegend,
-          inProgressLegend        = inProgressLegend
+          inProgressLegend        = inProgressLegend,
+          experimental            = experimental
         )
       }
     }

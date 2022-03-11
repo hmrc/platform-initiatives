@@ -57,7 +57,8 @@ class PlatformInitiativesControllerSpec
             target        = 100
           ),
           completedLegend       = "Completed",
-          inProgressLegend      = "Not completed"
+          inProgressLegend      = "Not completed",
+          experimental          = false
         ),
         PlatformInitiative(
           initiativeName        = "Update Dependency",
@@ -67,7 +68,8 @@ class PlatformInitiativesControllerSpec
             target        = 70
           ),
           completedLegend       = "Completed",
-          inProgressLegend      = "Not completed"
+          inProgressLegend      = "Not completed",
+          experimental          = false
         )
       )
       when(mockPlatformInitiativesService.allPlatformInitiatives()) thenReturn {
@@ -114,7 +116,8 @@ class PlatformInitiativesControllerSpec
             target        = 1
           ),
           completedLegend       = "Completed",
-          inProgressLegend      = "Not completed"
+          inProgressLegend      = "Not completed",
+          experimental          = false
         ),
         PlatformInitiative(
           initiativeName        = "Update Dependency",
@@ -124,7 +127,8 @@ class PlatformInitiativesControllerSpec
             target        = 1
           ),
           completedLegend       = "Completed",
-          inProgressLegend      = "Not completed"
+          inProgressLegend      = "Not completed",
+          experimental          = false
         )
       )
       when(mockPlatformInitiativesService.allPlatformInitiatives(Option("team-1"))) thenReturn {

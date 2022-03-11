@@ -17,7 +17,7 @@
 package uk.gov.hmrc.platforminitiatives.models
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{OFormat, __}
+import play.api.libs.json.{Json, OFormat, OWrites, Reads, Writes, __}
 
 case class Progress(
   current : Int,
@@ -38,17 +38,20 @@ case class PlatformInitiative(
   initiativeDescription     : String,
   progress                  : Progress,
   completedLegend           : String,
-  inProgressLegend          : String
+  inProgressLegend          : String,
+  experimental              : Boolean
 )
 
 object PlatformInitiative {
 
-  implicit val format: OFormat[PlatformInitiative] = {
-    ((__ \ "initiativeName"           ).format[String]
-      ~ (__ \ "initiativeDescription" ).format[String]
-      ~ (__ \ "progress"              ).format[Progress]
-      ~ (__ \ "completedLegend"       ).format[String]
-      ~ (__ \ "inProgressLegend"      ).format[String]
-      ) (PlatformInitiative.apply, unlift(PlatformInitiative.unapply))
+  def ignore[A]: OWrites[A] = OWrites[A](_ => Json.obj())
+  implicit val writes: OWrites[PlatformInitiative] = {
+    ((__ \ "initiativeName"           ).write[String]
+      ~ (__ \ "initiativeDescription" ).write[String]
+      ~ (__ \ "progress"              ).write[Progress]
+      ~ (__ \ "completedLegend"       ).write[String]
+      ~ (__ \ "inProgressLegend"      ).write[String]
+      ~ ignore[Boolean]
+      ) (unlift(PlatformInitiative.unapply))
   }
 }
