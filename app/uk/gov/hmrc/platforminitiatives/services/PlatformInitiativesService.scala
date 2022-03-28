@@ -113,7 +113,7 @@ class PlatformInitiativesService @Inject()(
       ),
         createUpgradeInitiative(
         initiativeName        = "Depreciate simple-reactivemongo: hmrc-mongo usage",
-        initiativeDescription = s"Experimental initiative for monitoring hmrc-mongo usage [hmrc-mongo usage](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc.mongo&artefact=hmrc-mongo-common&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,0.58.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
+        initiativeDescription = s"Experimental initiative for monitoring hmrc-mongo usage [hmrc-mongo usage](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc.mongo&artefact=hmrc-mongo-common&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
         group                 = "uk.gov.hmrc.mongo",
         artefact              = "hmrc-mongo-common",
         // Low version number to allow initiative to act as a count rather than a typical initiative
