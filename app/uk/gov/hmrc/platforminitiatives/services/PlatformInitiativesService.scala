@@ -99,6 +99,28 @@ class PlatformInitiativesService @Inject()(
         version               = Version(2,13,0,"2.13.0"),
         team                  = team,
         experimental          = true
+      ),
+      createUpgradeInitiative(
+        initiativeName        = "Depreciate simple-reactivemongo: simple-reactivemongo usage",
+        initiativeDescription = s"Experimental initiative for monitoring [simple-reactivemongo usage](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=simple-reactivemongo&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
+        group                 = "uk.gov.hmrc",
+        artefact              = "simple-reactivemongo",
+        // Low version number to allow initiative to act as a count rather than a typical initiative
+        version               = Version(0,0,0,"0.0.0"),
+        team                  = team,
+        completedLegend       = "simple-reactivemongo",
+        experimental          = true
+      ),
+        createUpgradeInitiative(
+        initiativeName        = "Depreciate simple-reactivemongo: hmrc-mongo usage",
+        initiativeDescription = s"Experimental initiative for monitoring hmrc-mongo usage [hmrc-mongo usage](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc.mongo&artefact=hmrc-mongo-common&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,0.58.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
+        group                 = "uk.gov.hmrc.mongo",
+        artefact              = "hmrc-mongo-common",
+        // Low version number to allow initiative to act as a count rather than a typical initiative
+        version               = Version(0,0,0,"0.0.0"),
+        team                  = team,
+        completedLegend       = "hmrc-mongo",
+        experimental          = true
       )
     )
     Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
