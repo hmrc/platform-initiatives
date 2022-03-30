@@ -101,8 +101,8 @@ class PlatformInitiativesService @Inject()(
         experimental          = true
       ),
       createMigrationInitiative(
-        initiativeName        = "Depreciate Simple-Reactivemongo: HMRC-Mongo Migration",
-        initiativeDescription = s"Monitoring [repos still using simple-reactivemongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=simple-reactivemongo&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
+        initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
+        initiativeDescription = s"Monitoring [repos still using simple-reactivemongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=simple-reactivemongo&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) and [repos now using hmrc-mongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc.mongo&artefact=hmrc-mongo-common&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
         newGroup              = "uk.gov.hmrc.mongo",
         newArtefact           = "hmrc-mongo-common",
         oldGroup              = "uk.gov.hmrc",
@@ -196,17 +196,17 @@ class PlatformInitiativesService @Inject()(
     for {
       firstArtefactDependencies   <- serviceDependenciesConnector.getServiceDependency(newGroup, newArtefact, environment)
       secondArtefactDependencies  <- serviceDependenciesConnector.getServiceDependency(oldGroup, oldArtefact, environment)
-      allDependencies             = firstArtefactDependencies ++ secondArtefactDependencies
+      allDependencies             = (firstArtefactDependencies ++ secondArtefactDependencies)
+        // Filtering for exclusively owned repos
+        .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
     } yield PlatformInitiative(
       initiativeName              = initiativeName,
       initiativeDescription       = initiativeDescription,
       progress                    = Progress(
         current = allDependencies
-          // Filtering for exclusively owned repos
-          .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
           .count(_.depArtefact == newArtefact),
         target  = allDependencies
-          .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+          .length
       ),
       completedLegend             = completedLegend,
       inProgressLegend            = inProgressLegend,
