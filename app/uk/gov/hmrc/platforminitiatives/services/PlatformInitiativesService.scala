@@ -99,6 +99,18 @@ class PlatformInitiativesService @Inject()(
         version               = Version(2,13,0,"2.13.0"),
         team                  = team,
         experimental          = true
+      ),
+      createMigrationInitiative(
+        initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
+        initiativeDescription = s"Monitoring [repos still using simple-reactivemongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=simple-reactivemongo&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) and [repos now using hmrc-mongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc.mongo&artefact=hmrc-mongo-common&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
+        newGroup              = "uk.gov.hmrc.mongo",
+        newArtefact           = "hmrc-mongo-common",
+        oldGroup              = "uk.gov.hmrc",
+        oldArtefact           = "simple-reactivemongo",
+        team                  = team,
+        inProgressLegend      = "Simple-Reactivemongo",
+        completedLegend       = "HMRC-Mongo",
+        experimental          = true
       )
     )
     Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
@@ -167,4 +179,38 @@ class PlatformInitiativesService @Inject()(
         )
       }
     }
+
+  def createMigrationInitiative(
+   initiativeName              : String,
+   initiativeDescription       : String,
+   newGroup                    : String,
+   newArtefact                 : String,
+   oldGroup                    : String,
+   oldArtefact                 : String,
+   team                        : Option[String] = None,
+   environment                 : Option[Environment] = Some(Environment.Production),
+   completedLegend             : String = "Completed",
+   inProgressLegend            : String = "Not Completed",
+   experimental                : Boolean = false
+ )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
+    for {
+      firstArtefactDependencies   <- serviceDependenciesConnector.getServiceDependency(newGroup, newArtefact, environment)
+      secondArtefactDependencies  <- serviceDependenciesConnector.getServiceDependency(oldGroup, oldArtefact, environment)
+      allDependencies             = (firstArtefactDependencies ++ secondArtefactDependencies)
+        // Filtering for exclusively owned repos
+        .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+    } yield PlatformInitiative(
+      initiativeName              = initiativeName,
+      initiativeDescription       = initiativeDescription,
+      progress                    = Progress(
+        current = allDependencies
+          .count(_.depArtefact == newArtefact),
+        target  = allDependencies
+          .length
+      ),
+      completedLegend             = completedLegend,
+      inProgressLegend            = inProgressLegend,
+      experimental                = experimental
+    )
+  }
 }

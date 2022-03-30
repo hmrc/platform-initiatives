@@ -17,7 +17,7 @@
 package uk.gov.hmrc.platforminitiatives.models
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{Json, OFormat, OWrites, Reads, Writes, __}
+import play.api.libs.json.{Json, OFormat, OWrites, __}
 
 case class Progress(
   current : Int,
