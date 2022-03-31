@@ -1,4 +1,5 @@
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val silencerVersion = "1.7.5"
 
@@ -19,4 +20,6 @@ lazy val microservice = Project("platform-initiatives", file("."))
       "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
     )
   )
+  .settings(publishingSettings: _*)
   .configs(IntegrationTest)
+  .settings(integrationTestSettings(): _*)
