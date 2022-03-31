@@ -19,3 +19,4 @@ lazy val microservice = Project("platform-initiatives", file("."))
       "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
     )
   )
+  .configs(IntegrationTest)
