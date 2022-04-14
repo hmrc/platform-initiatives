@@ -27,8 +27,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
-
-import scala.language.postfixOps
+import scala.io.Source._
 
 class ServiceDependenciesConnectorSpec
   extends AnyWordSpec
@@ -42,7 +41,6 @@ class ServiceDependenciesConnectorSpec
     with IntegrationPatience {
   implicit val hc: HeaderCarrier = HeaderCarrier()
   override lazy val resetWireMockMappings = false
-  override lazy val wireMockRootDirectory = "test/resources"
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder()
@@ -60,10 +58,12 @@ class ServiceDependenciesConnectorSpec
 
       stubFor(
         get(urlEqualTo(s"/api/dependencies"))
-          .willReturn(aResponse().withBodyFile("/service-dependencies/dependencies.json"))
+          .willReturn(aResponse().withBody(getFile("/service-dependencies/dependencies.json")))
       )
       val dependencies = connector.getAllDependencies().futureValue
       dependencies.head.repositoryName mustBe "hmrc-test"
     }
   }
+
+  private def getFile(path: String) = fromInputStream(getClass.getResourceAsStream(path)).mkString
 }

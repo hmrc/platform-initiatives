@@ -17,6 +17,7 @@
 package uk.gov.hmrc.platforminitiatives.connectors
 
 import play.api.cache.AsyncCacheApi
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
 import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Environment, SlugDependencies}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
