@@ -28,12 +28,12 @@ case class SlugDependencies(
   )
 
 object SlugDependencies {
-    implicit val format: OFormat[SlugDependencies] = {
-        ((__ \ "slugName"     ).format[String]
-        ~ (__ \ "depGroup"    ).format[String]
-        ~ (__ \ "depArtefact" ).format[String]
-        ~ (__ \ "depVersion"  ).format[String]
-        ~ (__ \ "teams"       ).format[Seq[String]]
-        ) (SlugDependencies.apply, unlift(SlugDependencies.unapply))
-    }
+  implicit val format: OFormat[SlugDependencies] = {
+      ((__ \ "slugName"     ).format[String]
+      ~ (__ \ "depGroup"    ).format[String]
+      ~ (__ \ "depArtefact" ).format[String]
+      ~ (__ \ "depVersion"  ).format[String]
+      ~ (__ \ "teams"       ).format[Seq[String]]
+      ) (SlugDependencies.apply, unlift(SlugDependencies.unapply))
   }
+}

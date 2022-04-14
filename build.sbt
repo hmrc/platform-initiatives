@@ -1,7 +1,7 @@
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 
-val silencerVersion = "1.7.5"
+val silencerVersion = "1.7.8"
 
 lazy val microservice = Project("platform-initiatives", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
@@ -11,7 +11,7 @@ lazy val microservice = Project("platform-initiatives", file("."))
   .settings(PlayKeys.playDefaultPort := 9021)
   .settings(libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test)
   .settings(resolvers += Resolver.jcenterRepo)
-  .settings(scalaVersion := "2.12.14")
+  .settings(scalaVersion := "2.12.15")
   .settings(
     // Use the silencer plugin to suppress warnings from unused imports in routes etc.
     scalacOptions += "-P:silencer:pathFilters=routes",

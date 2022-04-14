@@ -31,7 +31,6 @@ import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, Slu
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class PlatformInitiativesServiceSpec
   extends AnyWordSpec

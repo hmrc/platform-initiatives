@@ -29,7 +29,6 @@ import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 
 class PlatformInitiativesControllerSpec
@@ -41,7 +40,7 @@ class PlatformInitiativesControllerSpec
 
   "Platform Initiatives controller" should {
     "have the correct url set up for the initiatives list" in {
-      uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.allInitiatives()
+      uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.allInitiatives
         .url mustBe "/initiatives"
     }
   }

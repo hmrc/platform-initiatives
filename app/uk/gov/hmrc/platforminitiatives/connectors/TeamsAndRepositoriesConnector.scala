@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.platforminitiatives.connectors
 
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Json, OFormat}
+import play.api.libs.json._
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
