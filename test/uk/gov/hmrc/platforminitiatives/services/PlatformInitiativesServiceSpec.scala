@@ -91,7 +91,7 @@ class PlatformInitiativesServiceSpec
           Future.successful(mockSlugDependencies)
       val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
       val finalResult: Seq[PlatformInitiative] = result.futureValue
-      finalResult.length shouldBe 5
+      finalResult.length shouldBe 6
     }
   }
 
