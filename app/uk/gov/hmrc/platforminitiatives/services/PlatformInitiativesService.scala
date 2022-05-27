@@ -109,8 +109,7 @@ class PlatformInitiativesService @Inject()(
         oldArtefact           = "simple-reactivemongo",
         team                  = team,
         inProgressLegend      = "Simple-Reactivemongo",
-        completedLegend       = "HMRC-Mongo",
-        experimental          = true
+        completedLegend       = "HMRC-Mongo"
       )
     )
     Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
