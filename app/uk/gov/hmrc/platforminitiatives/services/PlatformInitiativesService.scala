@@ -79,7 +79,7 @@ class PlatformInitiativesService @Inject()(
         initiativeDescription = s"[CL250 Security upgrade required](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,5.6.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/x/RgpxDw" + ").",
         group                 = "uk.gov.hmrc",
         artefact              = "auth-client",
-        version               = Version(5,6,0,"5.6.0"),
+        version               = Version(5,5,0,"5.5.0"),
         team                  = team
       ),
       createUpgradeInitiative(
