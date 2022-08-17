@@ -79,7 +79,7 @@ class PlatformInitiativesService @Inject()(
         initiativeDescription = s"[CL250 Security upgrade required](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&scope=compile&versionRange=[0.0.0,5.6.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/x/RgpxDw" + ").",
         group                 = "uk.gov.hmrc",
         artefact              = "auth-client",
-        version               = Version(5,5,0,"5.5.0"),
+        version               = Version(5,6,0,"5.6.0"),
         team                  = team
       ),
       createUpgradeInitiative(
@@ -123,7 +123,9 @@ class PlatformInitiativesService @Inject()(
      inProgressLegend            : String = "Not Completed",
      experimental                : Boolean = false
    )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
-    teamsAndRepositoriesConnector.allDefaultBranches.map { repos =>
+    teamsAndRepositoriesConnector
+      .allDefaultBranches
+      .map { repos =>
       PlatformInitiative(
         initiativeName            = initiativeName,
         initiativeDescription     = initiativeDescription,
@@ -159,18 +161,16 @@ class PlatformInitiativesService @Inject()(
     inProgressLegend            : String = "Not Completed",
     experimental                : Boolean = false
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
-    serviceDependenciesConnector.getServiceDependency(group, artefact, environment)
+    serviceDependenciesConnector
+      .getServiceDependency(group, artefact, environment)
+      .map(sd => team.fold(sd)(t => sd.filter(_.teams == Seq(t)))) // Filtering for exclusively owned repos, if set
       .map { dependencies =>
         PlatformInitiative(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
           progress                = Progress(
-            current = dependencies
-                        // Filtering for exclusively owned repos
-                        .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
-                        .count(_.depVersion >= version.original),
-            target  = dependencies
-                        .count(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+            current = dependencies.count(d => Version(d.depVersion) >= version),
+            target  = dependencies.length
           ),
           completedLegend         = completedLegend,
           inProgressLegend        = inProgressLegend,
