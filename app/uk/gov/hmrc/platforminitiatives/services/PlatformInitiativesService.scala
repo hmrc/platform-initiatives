@@ -123,7 +123,9 @@ class PlatformInitiativesService @Inject()(
      inProgressLegend            : String = "Not Completed",
      experimental                : Boolean = false
    )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
-    teamsAndRepositoriesConnector.allDefaultBranches.map { repos =>
+    teamsAndRepositoriesConnector
+      .allDefaultBranches
+      .map { repos =>
       PlatformInitiative(
         initiativeName            = initiativeName,
         initiativeDescription     = initiativeDescription,
@@ -161,7 +163,7 @@ class PlatformInitiativesService @Inject()(
   )(implicit ec: ExecutionContext): Future[PlatformInitiative] = {
     serviceDependenciesConnector
       .getServiceDependency(group, artefact, environment)
-      .map(_.filter(_.teams.length == 1)) // Filtering for exclusively owned repos
+      .map(sd => team.fold(sd)(t => sd.filter(_.teams == Seq(t)))) // Filtering for exclusively owned repos, if set
       .map { dependencies =>
         PlatformInitiative(
           initiativeName          = initiativeName,
