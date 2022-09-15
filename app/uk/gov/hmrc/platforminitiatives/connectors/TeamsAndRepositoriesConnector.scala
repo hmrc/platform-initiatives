@@ -25,34 +25,6 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-
-sealed trait RepoType { def asString: String }
-object RepoType {
-  case object Service   extends RepoType { override val asString = "Service"   }
-  case object Library   extends RepoType { override val asString = "Library"   }
-  case object Prototype extends RepoType { override val asString = "Prototype" }
-  case object Other     extends RepoType { override val asString = "Other"     }
-
-  val values: List[RepoType] = List(Service, Library, Prototype, Other)
-
-  def parse(s: String): Either[String, RepoType] =
-    values
-      .find(_.asString == s)
-      .toRight(s"Invalid repoType - should be one of: ${values.map(_.asString).mkString(", ")}")
-
-  val format: Format[RepoType] =
-    new Format[RepoType] {
-      override def reads(json: JsValue): JsResult[RepoType] =
-        json match {
-          case JsString(s) => parse(s).fold(msg => JsError(msg), rt => JsSuccess(rt))
-          case _           => JsError("String value expected")
-        }
-
-      override def writes(rt: RepoType): JsValue =
-        JsString(rt.asString)
-    }
-}
-
 case class RepositoryDisplayDetails(
    name          : String,
    createdAt     : LocalDateTime,
