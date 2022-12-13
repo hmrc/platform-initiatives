@@ -52,8 +52,9 @@ class ServiceDependenciesConnector @Inject() (
     environment : Option[Environment],
     range       : String = "[0.0.0,)"
   )(implicit hc: HeaderCarrier): Future[Seq[SlugDependencies]] = {
+    val scope = "compile"
     httpClient.GET[Seq[SlugDependencies]](
-      url"$servicesDependenciesBaseUrl/api/serviceDeps?group=$group&artefact=$artefact&versionRange=$range&flag=$environment"
+      url"$servicesDependenciesBaseUrl/api/serviceDeps?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=$scope"
     )
   }
 }
