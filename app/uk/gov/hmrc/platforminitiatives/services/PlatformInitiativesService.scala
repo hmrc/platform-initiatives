@@ -50,14 +50,6 @@ class PlatformInitiativesService @Inject()(
         inProgressLegend      = "Master"
       ),
       createUpgradeInitiative(
-        initiativeName        = "Play 2.6 upgrade",
-        initiativeDescription = s"Play 2.6 upgrade - Deprecate [Play 2.5 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,2.6.0)&asCsv=false".toString.replace(")", "\\)") + ") | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
-        group                 = "com.typesafe.play",
-        artefact              = "play",
-        version               = Version(2,6,0,"2.6.0"),
-        team                  = team
-      ),
-      createUpgradeInitiative(
         initiativeName        = "Play 2.8 upgrade - Production",
         initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,2.8.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
         group                 = "com.typesafe.play",
@@ -88,8 +80,7 @@ class PlatformInitiativesService @Inject()(
         group                 = "org.scala-lang",
         artefact              = "scala-library",
         version               = Version(2,12,0,"2.12.0"),
-        team                  = team,
-        experimental          = true
+        team                  = team
       ),
       createUpgradeInitiative(
         initiativeName        = "Scala 2.13 Upgrade",
@@ -98,7 +89,6 @@ class PlatformInitiativesService @Inject()(
         artefact              = "scala-library",
         version               = Version(2,13,0,"2.13.0"),
         team                  = team,
-        experimental          = true
       ),
       createMigrationInitiative(
         initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
@@ -110,6 +100,12 @@ class PlatformInitiativesService @Inject()(
         team                  = team,
         inProgressLegend      = "Simple-Reactivemongo",
         completedLegend       = "HMRC-Mongo"
+      ),
+      createJavaInitiative(
+        initiativeName        = "Java 11 Upgrade",
+        initiativeDescription = s"""Services should be built and run with Java 11 before defaults are changed - [JDK Versions: latest](${url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest"}) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/TwLIH"})""",
+        version               = Version.apply("11.0.0"),
+        team                  = team
       )
     )
     Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
@@ -148,6 +144,31 @@ class PlatformInitiativesService @Inject()(
       )
     }
   }
+
+  def createJavaInitiative(
+     initiativeName              : String,
+     initiativeDescription       : String,
+     version                     : Version,
+     team                        : Option[String] = None,
+     completedLegend             : String = "Completed",
+     inProgressLegend            : String = "Not Completed",
+     experimental                : Boolean = false
+   )(implicit ec: ExecutionContext): Future[PlatformInitiative] =
+    serviceDependenciesConnector
+      .getSlugJdkVersions()
+      .map { repos =>
+        PlatformInitiative(
+          initiativeName            = initiativeName,
+          initiativeDescription     = initiativeDescription,
+          progress                  = Progress(
+            current = repos.count(_.version >= version)
+          , target  = repos.length
+          ),
+          completedLegend           = completedLegend,
+          inProgressLegend          = inProgressLegend,
+          experimental              = experimental
+        )
+      }
 
   def createUpgradeInitiative(
     initiativeName              : String,

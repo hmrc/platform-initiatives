@@ -19,7 +19,7 @@ package uk.gov.hmrc.platforminitiatives.connectors
 import play.api.cache.AsyncCacheApi
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Environment, SlugDependencies}
+import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Environment, SlugDependencies, SlugJdkVersion}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
@@ -55,6 +55,12 @@ class ServiceDependenciesConnector @Inject() (
     val scope = "compile"
     httpClient.GET[Seq[SlugDependencies]](
       url"$servicesDependenciesBaseUrl/api/serviceDeps?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=$scope"
+    )
+  }
+
+  def getSlugJdkVersions()(implicit hc: HeaderCarrier): Future[Seq[SlugJdkVersion]] = {
+    httpClient.GET[Seq[SlugJdkVersion]](
+      url"$servicesDependenciesBaseUrl/api/jdkVersions"
     )
   }
 }

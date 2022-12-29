@@ -31,6 +31,7 @@ import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, Slu
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.platforminitiatives.models.SlugJdkVersion
 
 class PlatformInitiativesServiceSpec
   extends AnyWordSpec
@@ -78,20 +79,37 @@ class PlatformInitiativesServiceSpec
     }
   }
 
+  "createJavaInitiative" should {
+    "return an initiative for Java 11 upgrade" in new Setup {
+      when(mockServiceDependenciesConnector.getSlugJdkVersions()(any[HeaderCarrier]))
+        .thenReturn(Future.successful(mockSlugJdkVersions))
+      val result: Future[PlatformInitiative] = platformInitiativesService.createJavaInitiative(
+        initiativeName        = "Test",
+        initiativeDescription = s"Test Description",
+        version               = Version.apply("11.0.0"),
+      )
+      val finalResult: PlatformInitiative = result.futureValue
+      finalResult.progress shouldBe Progress(1,2)
+    }
+  }
+
   "allPlatformInitiatives" should {
     "return a future sequence of PlatformInitiatives" in new Setup {
-      when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental")) thenReturn true
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier])) thenReturn
-        Future.successful(mockRepositories)
+      when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
+        .thenReturn(true)
+      when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier]))
+        .thenReturn(Future.successful(mockRepositories))
       when(mockServiceDependenciesConnector.getServiceDependency(
         group       = anyString,
         artefact    = anyString,
         environment = any,
-        range       = anyString)(any[HeaderCarrier])) thenReturn
-          Future.successful(mockSlugDependencies)
+        range       = anyString)(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockSlugDependencies))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions()(any[HeaderCarrier]))
+        .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
       val finalResult: Seq[PlatformInitiative] = result.futureValue
-      finalResult.length shouldBe 6
+      finalResult.length shouldBe 8
     }
   }
 
@@ -151,6 +169,20 @@ class PlatformInitiativesServiceSpec
         depArtefact = "test-dependency",
         depVersion  = "1.5.0",
         teams       = Seq("team-1")
+      )
+    )
+    val mockSlugJdkVersions = Seq(
+      SlugJdkVersion(
+        slugName    = "service-1",
+        version     = Version.apply("1.8.0_345"),
+        vendor      = "OPENJDK",
+        kind        = "JRE",
+      ),
+      SlugJdkVersion(
+        slugName    = "service-2",
+        version     = Version.apply("11.0.15"),
+        vendor      = "OPENJDK",
+        kind        = "JRE",
       )
     )
   }
