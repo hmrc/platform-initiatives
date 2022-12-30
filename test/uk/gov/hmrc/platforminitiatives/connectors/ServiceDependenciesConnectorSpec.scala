@@ -72,7 +72,7 @@ class ServiceDependenciesConnectorSpec
         get(urlEqualTo(s"/api/jdkVersions"))
           .willReturn(aResponse().withBody(getFile("/service-dependencies/jdk-versions.json")))
       )
-      val jdkVersions = connector.getSlugJdkVersions().futureValue
+      val jdkVersions = connector.getSlugJdkVersions(team = None).futureValue
       jdkVersions.head.slugName mustBe "service-1"
     }
   }

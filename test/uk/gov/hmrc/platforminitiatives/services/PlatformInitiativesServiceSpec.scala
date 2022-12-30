@@ -81,7 +81,7 @@ class PlatformInitiativesServiceSpec
 
   "createJavaInitiative" should {
     "return an initiative for Java 11 upgrade" in new Setup {
-      when(mockServiceDependenciesConnector.getSlugJdkVersions()(any[HeaderCarrier]))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Future[PlatformInitiative] = platformInitiativesService.createJavaInitiative(
         initiativeName        = "Test",
@@ -105,7 +105,7 @@ class PlatformInitiativesServiceSpec
         environment = any,
         range       = anyString)(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockSlugDependencies))
-      when(mockServiceDependenciesConnector.getSlugJdkVersions()(any[HeaderCarrier]))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
       val finalResult: Seq[PlatformInitiative] = result.futureValue

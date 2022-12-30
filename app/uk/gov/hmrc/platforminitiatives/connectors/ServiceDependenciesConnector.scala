@@ -58,9 +58,8 @@ class ServiceDependenciesConnector @Inject() (
     )
   }
 
-  def getSlugJdkVersions()(implicit hc: HeaderCarrier): Future[Seq[SlugJdkVersion]] = {
+  def getSlugJdkVersions(team: Option[String])(implicit hc: HeaderCarrier): Future[Seq[SlugJdkVersion]] =
     httpClient.GET[Seq[SlugJdkVersion]](
-      url"$servicesDependenciesBaseUrl/api/jdkVersions"
+      url"$servicesDependenciesBaseUrl/api/jdkVersions?team=$team"
     )
-  }
 }
