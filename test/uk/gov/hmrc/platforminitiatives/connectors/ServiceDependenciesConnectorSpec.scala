@@ -65,5 +65,17 @@ class ServiceDependenciesConnectorSpec
     }
   }
 
+  "ServiceDependenciesConnector.getSlugJdkVersions" should {
+    "return correct JSON for Dependencies" in {
+
+      stubFor(
+        get(urlEqualTo(s"/api/jdkVersions"))
+          .willReturn(aResponse().withBody(getFile("/service-dependencies/jdk-versions.json")))
+      )
+      val jdkVersions = connector.getSlugJdkVersions(team = None).futureValue
+      jdkVersions.head.slugName mustBe "service-1"
+    }
+  }
+
   private def getFile(path: String) = fromInputStream(getClass.getResourceAsStream(path)).mkString
 }

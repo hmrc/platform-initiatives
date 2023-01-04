@@ -4,16 +4,14 @@ import sbt._
 
 
 object AppDependencies {
-  val bootstrapPlayVersion = "7.0.0"
-  val hmrcMongoVersion     = "0.70.0"
+  val bootstrapPlayVersion = "7.12.0"
+  val hmrcMongoVersion     = "0.74.0"
 
   val compile = Seq(
     ws,
     ehcache,
     "uk.gov.hmrc"           %% "bootstrap-backend-play-28" % bootstrapPlayVersion,
     "uk.gov.hmrc.mongo"     %% "hmrc-mongo-metrix-play-28" % hmrcMongoVersion,
-    "org.yaml"              %  "snakeyaml"                 % "1.28",
-    "org.typelevel"         %% "cats-core"                 % "2.6.1"
   )
 
   val test = Seq(
