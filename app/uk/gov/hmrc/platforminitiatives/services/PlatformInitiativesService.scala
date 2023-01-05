@@ -103,7 +103,7 @@ class PlatformInitiativesService @Inject()(
       ),
       createJavaInitiative(
         initiativeName        = "Java 11 Upgrade",
-        initiativeDescription = s"""[Java 11 upgrade](${url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?team=$teamName"}) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/TwLIH"})""",
+        initiativeDescription = s"""[Java 11 upgrade](${url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?teamName=$teamName"}) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/TwLIH"})""",
         version               = Version.apply("11.0.0"),
         team                  = team
       )
