@@ -108,7 +108,16 @@ class PlatformInitiativesService @Inject()(
         team                  = team
       )
     )
-    Future.sequence(initiatives).map(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
+    Future.sequence(initiatives).map {
+      _
+        .filter(_.progress.target != 0)
+        .filter(!_.experimental || displayExperimentalInitiatives)
+        .sortWith(sortByPercentageCompleteAscending)
+    }
+  }
+
+  private def sortByPercentageCompleteAscending(a: PlatformInitiative, b: PlatformInitiative) = {
+    a.progress.current.toFloat / b.progress.target < b.progress.current.toFloat / b.progress.target
   }
 
   def createDefaultBranchInitiative(

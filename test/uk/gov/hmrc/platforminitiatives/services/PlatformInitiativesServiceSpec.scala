@@ -111,6 +111,23 @@ class PlatformInitiativesServiceSpec
       val finalResult: Seq[PlatformInitiative] = result.futureValue
       finalResult.length shouldBe 8
     }
+    "return a future sequence of PlatformInitiatives ordered by percent complete ascending" in new Setup {
+      when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
+        .thenReturn(true)
+      when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier]))
+        .thenReturn(Future.successful(mockRepositories))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group = anyString,
+        artefact = anyString,
+        environment = any,
+        range = anyString)(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockSlugDependencies))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
+        .thenReturn(Future.successful(mockSlugJdkVersions))
+      val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
+      val finalResult: Seq[PlatformInitiative] = result.futureValue
+      finalResult.sliding(2).foreach(pair => (pair.head.progress.current.toFloat / pair.head.progress.target) shouldBe <= (pair.last.progress.current.toFloat / pair.last.progress.target))
+    }
   }
 
   private[this] trait Setup {
