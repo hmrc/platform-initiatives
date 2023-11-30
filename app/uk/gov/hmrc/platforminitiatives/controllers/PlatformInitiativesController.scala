@@ -32,7 +32,7 @@ class PlatformInitiativesController @Inject()(
  )(implicit val ec: ExecutionContext)
   extends BackendController(cc) {
 
-  implicit val hc = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   def allInitiatives: Action[AnyContent] = {
     Action.async {
