@@ -41,7 +41,7 @@ object RepositoryDisplayDetails {
 }
 
 class TeamsAndRepositoriesConnector @Inject()(http: HttpClient, servicesConfig: ServicesConfig)(implicit val ec: ExecutionContext) {
-  private implicit val rddf = RepositoryDisplayDetails.format
+  private implicit val rddf: OFormat[RepositoryDisplayDetails] = RepositoryDisplayDetails.format
 
   private val teamsAndServicesBaseUrl: String =
     servicesConfig.baseUrl("teams-and-repositories")

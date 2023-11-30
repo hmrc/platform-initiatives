@@ -43,7 +43,7 @@ case class Dependencies(
 
 object Dependencies {
   object Implicits {
-    private implicit val svf      = Version.format
+    private implicit val svf      : Format[Version]     = Version.format
     implicit val readsDependency  : Reads[Dependency]   = Json.reads[Dependency]
     implicit val reads            : Reads[Dependencies] = Json.reads[Dependencies]
   }
@@ -66,7 +66,7 @@ case class Version(
 
 object Version {
 
-  implicit val ordering = new Ordering[Version] {
+  implicit val ordering: Ordering[Version] = new Ordering[Version] {
     def compare(x: Version, y: Version): Int =
       x.compare(y)
   }
