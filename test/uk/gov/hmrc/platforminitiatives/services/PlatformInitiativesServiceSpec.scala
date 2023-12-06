@@ -109,7 +109,7 @@ class PlatformInitiativesServiceSpec
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
       val finalResult: Seq[PlatformInitiative] = result.futureValue
-      finalResult.length shouldBe 8
+      finalResult.length shouldBe 7
     }
   }
 
