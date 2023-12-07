@@ -37,10 +37,8 @@ class PlatformInitiativesService @Inject()(
   val displayExperimentalInitiatives: Boolean = configuration.get[Boolean]("initiatives.service.includeExperimental")
 
   def allPlatformInitiatives(team: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
-    val teamName = team match {
-      case None => ""
-      case Some(team) => team
-    }
+    val teamName = team.getOrElse("")
+
     val initiatives = Seq(
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
