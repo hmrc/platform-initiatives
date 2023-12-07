@@ -37,10 +37,8 @@ class PlatformInitiativesService @Inject()(
   val displayExperimentalInitiatives: Boolean = configuration.get[Boolean]("initiatives.service.includeExperimental")
 
   def allPlatformInitiatives(team: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
-    val teamName = team match {
-      case None => ""
-      case Some(team) => team
-    }
+    val teamName = team.getOrElse("")
+
     val initiatives = Seq(
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
@@ -49,21 +47,27 @@ class PlatformInitiativesService @Inject()(
         completedLegend       = "Updated",
         inProgressLegend      = "Master"
       ),
-      createUpgradeInitiative(
-        initiativeName        = "Play 2.8 upgrade - Production",
-        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,2.8.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
-        group                 = "com.typesafe.play",
-        artefact              = "play",
-        version               = Version(2,8,0,"2.8.0"),
-        team                  = team
-      ),
-      createUpgradeInitiative(
-        initiativeName        = "Play 2.8 upgrade - Latest",
-        initiativeDescription = s"Play 2.8 upgrade - Deprecate [Play 2.7 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope[]=compile&versionRange=[0.0.0,2.8.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
-        group                 = "com.typesafe.play",
-        artefact              = "play",
-        version               = Version(2,8,0,"2.8.0"),
+      createMigrationInitiative(
+        initiativeName        = "Replace com.typesafe.play with org.playframework (Play 3.0 upgrade) - Production",
+        initiativeDescription = s"Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
+        newGroup              = "org.playframework",
+        newArtefact           = "play",
+        oldGroup              = "com.typesafe.play",
+        oldArtefact           = "play",
         team                  = team,
+        inProgressLegend      = "org.playframework (Play 3.0)",
+        completedLegend       = "com.typesafe.play (Play 2.9 or below)"
+      ),
+      createMigrationInitiative(
+        initiativeName        = "Replace com.typesafe.play with org.playframework (Play 3.0 upgrade) - Latest",
+        initiativeDescription = s"Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope[]=compile&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
+        newGroup              = "org.playframework",
+        newArtefact           = "play",
+        oldGroup              = "com.typesafe.play",
+        oldArtefact           = "play",
+        team                  = team,
+        inProgressLegend      = "org.playframework (Play 3.0)",
+        completedLegend       = "com.typesafe.play (Play 2.9 or below)",
         environment           = None
       ),
       createUpgradeInitiative(
@@ -72,14 +76,6 @@ class PlatformInitiativesService @Inject()(
         group                 = "uk.gov.hmrc",
         artefact              = "auth-client",
         version               = Version(5,6,0,"5.6.0"),
-        team                  = team
-      ),
-      createUpgradeInitiative(
-        initiativeName        = "Scala 2.12 Upgrade",
-        initiativeDescription = s"Scala 2.12 upgrade - Deprecate [Scala 2.11 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=org.scala-lang&artefact=scala-library&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,2.12.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
-        group                 = "org.scala-lang",
-        artefact              = "scala-library",
-        version               = Version(2,12,0,"2.12.0"),
         team                  = team
       ),
       createUpgradeInitiative(
@@ -224,7 +220,7 @@ class PlatformInitiativesService @Inject()(
       initiativeDescription       = initiativeDescription,
       progress                    = Progress(
         current = allDependencies
-          .count(_.depArtefact == newArtefact),
+          .count(x => x.depArtefact == newArtefact && x.depGroup == newGroup),
         target  = allDependencies
           .length
       ),
