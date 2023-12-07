@@ -55,8 +55,8 @@ class PlatformInitiativesService @Inject()(
         oldGroup              = "com.typesafe.play",
         oldArtefact           = "play",
         team                  = team,
-        inProgressLegend      = "org.playframework (Play 3.0)",
-        completedLegend       = "com.typesafe.play (Play 2.9 or below)"
+        inProgressLegend      = "com.typesafe.play (Play 2.9 or below)",
+        completedLegend       = "org.playframework (Play 3.0)"
       ),
       createMigrationInitiative(
         initiativeName        = "Replace com.typesafe.play with org.playframework (Play 3.0 upgrade) - Latest",
@@ -66,8 +66,8 @@ class PlatformInitiativesService @Inject()(
         oldGroup              = "com.typesafe.play",
         oldArtefact           = "play",
         team                  = team,
-        inProgressLegend      = "org.playframework (Play 3.0)",
-        completedLegend       = "com.typesafe.play (Play 2.9 or below)",
+        inProgressLegend      = "com.typesafe.play (Play 2.9 or below)",
+        completedLegend       = "org.playframework (Play 3.0)",
         environment           = None
       ),
       createUpgradeInitiative(
@@ -230,3 +230,4 @@ class PlatformInitiativesService @Inject()(
     )
   }
 }
+
