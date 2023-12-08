@@ -48,26 +48,22 @@ class PlatformInitiativesService @Inject()(
         inProgressLegend      = "Master"
       ),
       createMigrationInitiative(
-        initiativeName        = "Replace com.typesafe.play with org.playframework (Play 3.0 upgrade) - Production",
+        initiativeName        = "Play 3.0 upgrade - Production",
         initiativeDescription = s"Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
         newGroup              = "org.playframework",
         newArtefact           = "play",
         oldGroup              = "com.typesafe.play",
         oldArtefact           = "play",
-        team                  = team,
-        inProgressLegend      = "com.typesafe.play (Play 2.9 or below)",
-        completedLegend       = "org.playframework (Play 3.0)"
+        team                  = team
       ),
       createMigrationInitiative(
-        initiativeName        = "Replace com.typesafe.play with org.playframework (Play 3.0 upgrade) - Latest",
+        initiativeName        = "Play 3.0 upgrade - Latest",
         initiativeDescription = s"Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope[]=compile&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
         newGroup              = "org.playframework",
         newArtefact           = "play",
         oldGroup              = "com.typesafe.play",
         oldArtefact           = "play",
         team                  = team,
-        inProgressLegend      = "com.typesafe.play (Play 2.9 or below)",
-        completedLegend       = "org.playframework (Play 3.0)",
         environment           = None
       ),
       createUpgradeInitiative(
