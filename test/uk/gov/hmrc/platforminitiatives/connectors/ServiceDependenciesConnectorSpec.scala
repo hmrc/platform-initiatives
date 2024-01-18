@@ -45,9 +45,7 @@ class ServiceDependenciesConnectorSpec
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.service-dependencies.host" -> wireMockHost,
-        "microservice.services.service-dependencies.port" -> wireMockPort,
-        //"play.http.requestHandler" -> "uk.gov.hmrc.play.bootstrap.http.RequestHandler"
-        "play.http.requestHandler" -> "play.api.http.DefaultHttpRequestHandler" // TODO not required for this test - but breaks another if removed...
+        "microservice.services.service-dependencies.port" -> wireMockPort
       ).build()
 
   private val connector = app.injector.instanceOf[ServiceDependenciesConnector]

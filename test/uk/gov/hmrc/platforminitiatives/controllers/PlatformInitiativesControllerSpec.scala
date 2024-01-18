@@ -40,7 +40,7 @@ class PlatformInitiativesControllerSpec
   "Platform Initiatives controller" should {
     "have the correct url set up for the initiatives list" in {
       uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.allInitiatives
-        .url shouldBe "/initiatives"
+        .url shouldBe "/platform-initiatives/initiatives"
     }
   }
 
