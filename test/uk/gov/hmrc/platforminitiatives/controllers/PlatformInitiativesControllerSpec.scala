@@ -17,7 +17,7 @@
 package uk.gov.hmrc.platforminitiatives.controllers
 
 import org.mockito.MockitoSugar
-import org.scalatest.matchers.must.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Result, Results}
@@ -33,15 +33,14 @@ import scala.concurrent.Future
 
 class PlatformInitiativesControllerSpec
   extends AnyWordSpec
-    with Matchers
-    with Results
-    with MockitoSugar {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+     with Matchers
+     with Results
+     with MockitoSugar {
 
   "Platform Initiatives controller" should {
     "have the correct url set up for the initiatives list" in {
       uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.allInitiatives
-        .url mustBe "/initiatives"
+        .url shouldBe "/initiatives"
     }
   }
 
@@ -49,12 +48,12 @@ class PlatformInitiativesControllerSpec
     "Return a 200 status code and correct JSON for PlatformInitiatives" in new Setup {
       val mockInitiatives: Seq[PlatformInitiative] = Seq(
         PlatformInitiative(
-          initiativeName = "Test initiative",
+          initiativeName        = "Test initiative",
           initiativeDescription = "Test initiative description",
-          progress = Progress(
-            current       = 10,
-            target        = 100
-          ),
+          progress              = Progress(
+                                    current       = 10,
+                                    target        = 100
+                                  ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed",
           experimental          = false
@@ -62,22 +61,23 @@ class PlatformInitiativesControllerSpec
         PlatformInitiative(
           initiativeName        = "Update Dependency",
           initiativeDescription = "Update Dependency description",
-          progress = Progress(
-            current       = 50,
-            target        = 70
-          ),
+          progress              = Progress(
+                                    current       = 50,
+                                    target        = 70
+                                  ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed",
           experimental          = false
         )
       )
-      when(mockPlatformInitiativesService.allPlatformInitiatives()) thenReturn {
-        Future.successful(mockInitiatives)
-      }
-      val result     : Future[Result]          = controller.allInitiatives.apply(FakeRequest())
-      val initiatives: JsValue = contentAsJson(result)
-      status(result) mustBe 200
-      initiatives mustBe Json.parse(
+
+      when(mockPlatformInitiativesService.allPlatformInitiatives())
+        .thenReturn(Future.successful(mockInitiatives))
+
+      val result: Future[Result] = controller.allInitiatives.apply(FakeRequest())
+
+      status(result)        shouldBe 200
+      contentAsJson(result) shouldBe Json.parse(
         """
           [{
              "initiativeName"        : "Test initiative",
@@ -108,12 +108,12 @@ class PlatformInitiativesControllerSpec
     "Return a 200 status code and correct JSON for a specified teams PlatformInitiatives" in new Setup {
       val mockInitiatives: Seq[PlatformInitiative] = Seq(
         PlatformInitiative(
-          initiativeName = "Test initiative",
+          initiativeName        = "Test initiative",
           initiativeDescription = "Test initiative description",
-          progress = Progress(
-            current       = 1,
-            target        = 1
-          ),
+          progress              = Progress(
+                                    current       = 1,
+                                    target        = 1
+                                  ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed",
           experimental          = false
@@ -121,22 +121,23 @@ class PlatformInitiativesControllerSpec
         PlatformInitiative(
           initiativeName        = "Update Dependency",
           initiativeDescription = "Update Dependency description",
-          progress = Progress(
-            current       = 0,
-            target        = 1
-          ),
+          progress              = Progress(
+                                    current       = 0,
+                                    target        = 1
+                                  ),
           completedLegend       = "Completed",
           inProgressLegend      = "Not completed",
           experimental          = false
         )
       )
-      when(mockPlatformInitiativesService.allPlatformInitiatives(Option("team-1"))) thenReturn {
-        Future.successful(mockInitiatives)
-      }
-      val result     : Future[Result]          = controller.teamInitiatives("team-1").apply(FakeRequest())
-      val initiatives: JsValue = contentAsJson(result)
-      status(result) mustBe 200
-      initiatives mustBe Json.parse(
+
+      when(mockPlatformInitiativesService.allPlatformInitiatives(Option("team-1")))
+        .thenReturn(Future.successful(mockInitiatives))
+
+      val result: Future[Result] = controller.teamInitiatives("team-1").apply(FakeRequest())
+
+      status(result)        shouldBe 200
+      contentAsJson(result) shouldBe Json.parse(
         """
           [{
              "initiativeName"        : "Test initiative",
@@ -165,10 +166,12 @@ class PlatformInitiativesControllerSpec
 
   private trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
+
     val mockPlatformInitiativesService: PlatformInitiativesService = mock[PlatformInitiativesService]
+
     val controller = new PlatformInitiativesController(
-        mockPlatformInitiativesService,
-        stubControllerComponents()
+      mockPlatformInitiativesService,
+      stubControllerComponents()
     )
   }
 }

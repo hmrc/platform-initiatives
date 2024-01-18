@@ -35,6 +35,7 @@ class ServiceDependenciesConnector @Inject() (
 
   private val servicesDependenciesBaseUrl: String =
     servicesConfig.baseUrl("service-dependencies")
+
   private val cacheExpiration: Duration =
     servicesConfig
       .getDuration("microservice.services.service-dependencies.cache.expiration")

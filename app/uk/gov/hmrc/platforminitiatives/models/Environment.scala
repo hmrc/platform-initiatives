@@ -29,10 +29,11 @@ object Environment {
   val values: List[Environment] =
     List(Development, Integration, QA, Staging, ExternalTest, Production)
 
-  implicit val ordering: Ordering[Environment] = new Ordering[Environment] {
-    def compare(x: Environment, y: Environment): Int =
-      values.indexOf(x).compare(values.indexOf(y))
-  }
+  implicit val ordering: Ordering[Environment] =
+    new Ordering[Environment] {
+      def compare(x: Environment, y: Environment): Int =
+        values.indexOf(x).compare(values.indexOf(y))
+    }
 
   def parse(s: String): Option[Environment] =
     values.find(_.asString == s)
