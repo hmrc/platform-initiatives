@@ -19,7 +19,6 @@ package uk.gov.hmrc.platforminitiatives.controllers
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -27,25 +26,22 @@ import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
 
 @Singleton
 class PlatformInitiativesController @Inject()(
-   platformInitiativesService       :   PlatformInitiativesService,
-   cc                               :   ControllerComponents
- )(implicit val ec: ExecutionContext)
+   platformInitiativesService:   PlatformInitiativesService,
+   cc                        :   ControllerComponents
+ )(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-
-  def allInitiatives: Action[AnyContent] = {
+  val allInitiatives: Action[AnyContent] =
     Action.async {
       platformInitiativesService.allPlatformInitiatives()
         .map(initiative =>
           Ok(Json.toJson(initiative)))
     }
-  }
-  def teamInitiatives(team: String): Action[AnyContent] = {
+
+  def teamInitiatives(team: String): Action[AnyContent] =
     Action.async {
       platformInitiativesService.allPlatformInitiatives(Option(team))
         .map(initiative =>
           Ok(Json.toJson(initiative)))
     }
-  }
 }

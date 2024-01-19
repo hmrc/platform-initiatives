@@ -17,7 +17,7 @@
 package uk.gov.hmrc.platforminitiatives.connectors
 
 import org.mockito.MockitoSugar
-import org.scalatest.matchers.must.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import com.github.tomakehurst.wiremock.client.WireMock._
@@ -28,26 +28,21 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
 
-import scala.io.Source.fromInputStream
-
 class TeamsAndRepositoriesConnectorSpec
   extends AnyWordSpec
-    with Matchers
-    with Results
-    with MockitoSugar
-    with GuiceOneAppPerSuite
-    with HttpClientSupport
-    with WireMockSupport {
+     with Matchers
+     with Results
+     with MockitoSugar
+     with GuiceOneAppPerSuite
+     with HttpClientSupport
+     with WireMockSupport {
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override lazy val resetWireMockMappings = false
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.teams-and-repositories.host" -> wireMockHost,
-        "microservice.services.teams-and-repositories.port" -> wireMockPort,
-        "play.http.requestHandler" -> "play.api.http.DefaultHttpRequestHandler",
-        "metrics.jvm" -> false
+        "microservice.services.teams-and-repositories.port" -> wireMockPort
       ).build()
 
   private val connector = app.injector.instanceOf[TeamsAndRepositoriesConnector]
@@ -56,12 +51,11 @@ class TeamsAndRepositoriesConnectorSpec
     "return correct JSON for Repository Display Details" in {
       stubFor(
         get(urlEqualTo(s"/api/repositories"))
-          .willReturn(aResponse().withBody(getFile("/teams-and-repositories/repositories.json")))
+          .willReturn(aResponse().withBodyFile("teams-and-repositories/repositories.json"))
       )
-      val dependencies = connector.allDefaultBranches.futureValue
-      dependencies.head.name mustBe "test"
+
+      val dependencies = connector.allDefaultBranches().futureValue
+      dependencies.head.name shouldBe "test"
     }
   }
-
-  private def getFile(path: String) = fromInputStream(getClass.getResourceAsStream(path)).mkString
 }

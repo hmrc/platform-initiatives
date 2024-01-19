@@ -26,12 +26,11 @@ import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, SlugDependencies, Version}
+import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, SlugDependencies, SlugJdkVersion, Version}
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import uk.gov.hmrc.platforminitiatives.models.SlugJdkVersion
 
 class PlatformInitiativesServiceSpec
   extends AnyWordSpec
@@ -44,16 +43,16 @@ class PlatformInitiativesServiceSpec
 
   "createDefaultBranchInitiative" should {
     "return an initiative for DefaultBranches where branch name is not updated" in new Setup {
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier])) thenReturn
-        Future.successful(mockRepositories)
-      val result: Future[PlatformInitiative] = platformInitiativesService.createDefaultBranchInitiative(
-        initiativeName        = "Test",
-        initiativeDescription = "Test Description",
-        completedLegend       = "Updated",
-        inProgressLegend      = "Master"
-      )
-      val finalResult: PlatformInitiative = result.futureValue
-      finalResult.progress shouldBe Progress(2,3)
+      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(any[HeaderCarrier]))
+        .thenReturn(Future.successful(mockRepositories))
+      val result: PlatformInitiative =
+        platformInitiativesService.createDefaultBranchInitiative(
+          initiativeName        = "Test",
+          initiativeDescription = "Test Description",
+          completedLegend       = "Updated",
+          inProgressLegend      = "Master"
+        ).futureValue
+      result.progress shouldBe Progress(2,3)
     }
   }
 
@@ -63,19 +62,19 @@ class PlatformInitiativesServiceSpec
         group       = anyString,
         artefact    = anyString,
         environment = any,
-        range       = anyString)(any[HeaderCarrier])) thenReturn
-        Future.successful(mockSlugDependencies)
-      val result: Future[PlatformInitiative] = platformInitiativesService.createUpgradeInitiative(
-        initiativeName        = "Test",
-        initiativeDescription = "Test Description",
-        group                 = "uk.gov.hmrc",
-        artefact              = "Dep1",
-        version               = Version(0, 2, 0)
-      )
-      val finalResult: PlatformInitiative = result.futureValue
-      finalResult shouldBe a [PlatformInitiative]
-      finalResult.initiativeName shouldBe "Test"
-      finalResult.progress shouldBe Progress(2,2)
+        range       = anyString)(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockSlugDependencies))
+
+      val result: PlatformInitiative =
+        platformInitiativesService.createUpgradeInitiative(
+          initiativeName        = "Test",
+          initiativeDescription = "Test Description",
+          group                 = "uk.gov.hmrc",
+          artefact              = "Dep1",
+          version               = Version(0, 2, 0)
+        ).futureValue
+      result.initiativeName shouldBe "Test"
+      result.progress       shouldBe Progress(2,2)
     }
   }
 
@@ -83,13 +82,12 @@ class PlatformInitiativesServiceSpec
     "return an initiative for Java 11 upgrade" in new Setup {
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
-      val result: Future[PlatformInitiative] = platformInitiativesService.createJavaInitiative(
+      val result: PlatformInitiative = platformInitiativesService.createJavaInitiative(
         initiativeName        = "Test",
         initiativeDescription = s"Test Description",
         version               = Version.apply("11.0.0"),
-      )
-      val finalResult: PlatformInitiative = result.futureValue
-      finalResult.progress shouldBe Progress(1,2)
+      ).futureValue
+      result.progress shouldBe Progress(1,2)
     }
   }
 
@@ -97,64 +95,65 @@ class PlatformInitiativesServiceSpec
     "return a future sequence of PlatformInitiatives" in new Setup {
       when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
         .thenReturn(true)
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches(any[HeaderCarrier]))
+      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockRepositories))
       when(mockServiceDependenciesConnector.getServiceDependency(
-        group       = anyString,
-        artefact    = anyString,
-        environment = any,
-        range       = anyString)(any[HeaderCarrier])
-      ).thenReturn(Future.successful(mockSlugDependencies))
+          group       = anyString,
+          artefact    = anyString,
+          environment = any,
+          range       = anyString)(any[HeaderCarrier])
+        )
+        .thenReturn(Future.successful(mockSlugDependencies))
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
-      val result: Future[Seq[PlatformInitiative]] = platformInitiativesService.allPlatformInitiatives()
-      val finalResult: Seq[PlatformInitiative] = result.futureValue
-      finalResult.length shouldBe 7
+      val result: Seq[PlatformInitiative] = platformInitiativesService.allPlatformInitiatives().futureValue
+      result.length shouldBe 7
     }
   }
 
   private[this] trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    val mockConfiguration: Configuration = mock[Configuration]
+    val mockConfiguration                : Configuration                 = mock[Configuration]
     val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
-    val mockServiceDependenciesConnector: ServiceDependenciesConnector = mock[ServiceDependenciesConnector]
-    val mockControllerComponents: ControllerComponents = mock[ControllerComponents]
-    val platformInitiativesService: PlatformInitiativesService = new PlatformInitiativesService(mockConfiguration, mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
+    val mockServiceDependenciesConnector : ServiceDependenciesConnector  = mock[ServiceDependenciesConnector]
+    val mockControllerComponents         : ControllerComponents          = mock[ControllerComponents]
+    val platformInitiativesService       : PlatformInitiativesService    = new PlatformInitiativesService(mockConfiguration, mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
 
     val mockRepositories: Seq[RepositoryDisplayDetails] = Seq(
       RepositoryDisplayDetails(
-        name = "test",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = false,
-        teamNames = Seq("Team-1", "Team-2"),
+        name          = "test",
+        createdAt     = Instant.now(),
+        lastUpdatedAt = Instant.now(),
+        isArchived    = false,
+        teamNames     = Seq("Team-1", "Team-2"),
         defaultBranch = "main"
       ),
       RepositoryDisplayDetails(
-        name = "test-2",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = false,
-        teamNames = Seq("Team-1"),
+        name          = "test-2",
+        createdAt     = Instant.now(),
+        lastUpdatedAt = Instant.now(),
+        isArchived    = false,
+        teamNames     = Seq("Team-1"),
         defaultBranch = "master"
       ),
       RepositoryDisplayDetails(
-        name = "test-3",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = false,
-        teamNames = Seq("Team-1"),
+        name          = "test-3",
+        createdAt     = Instant.now(),
+        lastUpdatedAt = Instant.now(),
+        isArchived    = false,
+        teamNames     = Seq("Team-1"),
         defaultBranch = "main"
       ),
       RepositoryDisplayDetails(
-        name = "test-4",
-        createdAt = LocalDateTime.now(),
-        lastUpdatedAt = LocalDateTime.now(),
-        isArchived = true,
-        teamNames = Seq("Team-2"),
+        name          = "test-4",
+        createdAt     = Instant.now(),
+        lastUpdatedAt = Instant.now(),
+        isArchived    = true,
+        teamNames     = Seq("Team-2"),
         defaultBranch = "master"
       )
     )
+
     val mockSlugDependencies = Seq(
       SlugDependencies(
         slugName    = "hmrc-test",
@@ -171,6 +170,7 @@ class PlatformInitiativesServiceSpec
         teams       = Seq("team-1")
       )
     )
+
     val mockSlugJdkVersions = Seq(
       SlugJdkVersion(
         slugName    = "service-1",

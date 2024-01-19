@@ -16,42 +16,50 @@
 
 package uk.gov.hmrc.platforminitiatives.connectors
 
-import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{__, Reads}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.time.LocalDateTime
+import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
+class TeamsAndRepositoriesConnector @Inject()(
+  http          : HttpClient,
+  servicesConfig: ServicesConfig
+)(implicit
+  ec: ExecutionContext
+) {
+
+  private val teamsAndServicesBaseUrl: String =
+    servicesConfig.baseUrl("teams-and-repositories")
+
+  def allDefaultBranches()(implicit hc: HeaderCarrier): Future[Seq[RepositoryDisplayDetails]] = {
+    implicit val rddr: Reads[RepositoryDisplayDetails] = RepositoryDisplayDetails.reads
+    http.GET[Seq[RepositoryDisplayDetails]](
+      url"$teamsAndServicesBaseUrl/api/repositories"
+    )
+  }
+}
+
 case class RepositoryDisplayDetails(
    name          : String,
-   createdAt     : LocalDateTime,
-   lastUpdatedAt : LocalDateTime,
+   createdAt     : Instant,
+   lastUpdatedAt : Instant,
    isArchived    : Boolean,
    teamNames     : Seq[String],
    defaultBranch : String
  )
 
 object RepositoryDisplayDetails {
-  val format: OFormat[RepositoryDisplayDetails] = {
-    Json.format[RepositoryDisplayDetails]
-  }
-}
-
-class TeamsAndRepositoriesConnector @Inject()(http: HttpClient, servicesConfig: ServicesConfig)(implicit val ec: ExecutionContext) {
-  private implicit val rddf: OFormat[RepositoryDisplayDetails] = RepositoryDisplayDetails.format
-
-  private val teamsAndServicesBaseUrl: String =
-    servicesConfig.baseUrl("teams-and-repositories")
-
-  def allDefaultBranches(implicit hc: HeaderCarrier): Future[Seq[RepositoryDisplayDetails]] =
-    http.GET[Seq[RepositoryDisplayDetails]](
-      url"$teamsAndServicesBaseUrl/api/repositories"
-    )
-}
-
-object TeamsAndRepositoriesConnector {
-  case class ServiceName(name: String) extends AnyVal
+  val reads: Reads[RepositoryDisplayDetails] =
+    ( (__ \ "name"         ).read[String]
+    ~ (__ \ "createdAt"    ).read[Instant]
+    ~ (__ \ "lastUpdatedAt").read[Instant]
+    ~ (__ \ "isArchived"   ).read[Boolean]
+    ~ (__ \ "teamNames"    ).read[Seq[String]]
+    ~ (__ \ "defaultBranch").read[String]
+    )(RepositoryDisplayDetails.apply _)
 }

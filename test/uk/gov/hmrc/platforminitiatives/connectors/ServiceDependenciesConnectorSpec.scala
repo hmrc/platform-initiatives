@@ -27,39 +27,36 @@ import uk.gov.hmrc.http.HeaderCarrier
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
-import scala.io.Source._
 
 class ServiceDependenciesConnectorSpec
   extends AnyWordSpec
-    with Matchers
-    with Results
-    with MockitoSugar
-    with GuiceOneAppPerSuite
-    with HttpClientSupport
-    with WireMockSupport
-    with ScalaFutures
-    with IntegrationPatience {
+     with Matchers
+     with Results
+     with MockitoSugar
+     with GuiceOneAppPerSuite
+     with HttpClientSupport
+     with WireMockSupport
+     with ScalaFutures
+     with IntegrationPatience {
+
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  override lazy val resetWireMockMappings = false
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.service-dependencies.host" -> wireMockHost,
-        "microservice.services.service-dependencies.port" -> wireMockPort,
-        "play.http.requestHandler" -> "play.api.http.DefaultHttpRequestHandler",
-        "metrics.jvm" -> false
+        "microservice.services.service-dependencies.port" -> wireMockPort
       ).build()
 
   private val connector = app.injector.instanceOf[ServiceDependenciesConnector]
 
   "ServiceDependenciesConnector.getAllDependencies" should {
     "return correct JSON for Dependencies" in {
-
       stubFor(
         get(urlEqualTo(s"/api/dependencies"))
-          .willReturn(aResponse().withBody(getFile("/service-dependencies/dependencies.json")))
+          .willReturn(aResponse().withBodyFile("service-dependencies/dependencies.json"))
       )
+
       val dependencies = connector.getAllDependencies().futureValue
       dependencies.head.repositoryName mustBe "hmrc-test"
     }
@@ -67,15 +64,13 @@ class ServiceDependenciesConnectorSpec
 
   "ServiceDependenciesConnector.getSlugJdkVersions" should {
     "return correct JSON for Dependencies" in {
-
       stubFor(
         get(urlEqualTo(s"/api/jdkVersions"))
-          .willReturn(aResponse().withBody(getFile("/service-dependencies/jdk-versions.json")))
+          .willReturn(aResponse().withBodyFile("service-dependencies/jdk-versions.json"))
       )
+
       val jdkVersions = connector.getSlugJdkVersions(team = None).futureValue
       jdkVersions.head.slugName mustBe "service-1"
     }
   }
-
-  private def getFile(path: String) = fromInputStream(getClass.getResourceAsStream(path)).mkString
 }

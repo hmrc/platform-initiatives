@@ -20,38 +20,37 @@ import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{Json, OFormat, OWrites, __}
 
 case class Progress(
-  current : Int,
-  target  : Int
+  current: Int,
+  target : Int
 )
 
 object Progress {
-  implicit val format: OFormat[Progress] = {
-    ((__ \ "current").format[Int]
-      ~ (__ \ "target").format[Int]
-      )(Progress.apply,unlift(Progress.unapply))
-  }
+  implicit val format: OFormat[Progress] =
+    ( (__ \ "current").format[Int]
+    ~ (__ \ "target" ).format[Int]
+    )(Progress.apply,unlift(Progress.unapply))
 }
 
 
 case class PlatformInitiative(
-  initiativeName            : String,
-  initiativeDescription     : String,
-  progress                  : Progress,
-  completedLegend           : String,
-  inProgressLegend          : String,
-  experimental              : Boolean
+  initiativeName       : String,
+  initiativeDescription: String,
+  progress             : Progress,
+  completedLegend      : String,
+  inProgressLegend     : String,
+  experimental         : Boolean
 )
 
 object PlatformInitiative {
+  private def ignore[A]: OWrites[A] =
+    OWrites[A](_ => Json.obj())
 
-  def ignore[A]: OWrites[A] = OWrites[A](_ => Json.obj())
-  implicit val writes: OWrites[PlatformInitiative] = {
-    ((__ \ "initiativeName"           ).write[String]
-      ~ (__ \ "initiativeDescription" ).write[String]
-      ~ (__ \ "progress"              ).write[Progress]
-      ~ (__ \ "completedLegend"       ).write[String]
-      ~ (__ \ "inProgressLegend"      ).write[String]
-      ~ ignore[Boolean]
-      ) (unlift(PlatformInitiative.unapply))
-  }
+  implicit val writes: OWrites[PlatformInitiative] =
+    ( (__ \ "initiativeName"        ).write[String]
+    ~ (__ \ "initiativeDescription" ).write[String]
+    ~ (__ \ "progress"              ).write[Progress]
+    ~ (__ \ "completedLegend"       ).write[String]
+    ~ (__ \ "inProgressLegend"      ).write[String]
+    ~ ignore[Boolean]
+    )(unlift(PlatformInitiative.unapply))
 }
