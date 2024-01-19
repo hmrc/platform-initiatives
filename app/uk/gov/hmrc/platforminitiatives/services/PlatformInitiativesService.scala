@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.platforminitiatives.services
 
+import cats.implicits._
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
@@ -23,6 +24,7 @@ import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector,
 import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Progress, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.http.StringContextOps
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,13 +38,11 @@ class PlatformInitiativesService @Inject()(
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val displayExperimentalInitiatives: Boolean = configuration.get[Boolean]("initiatives.service.includeExperimental")
 
-  def allPlatformInitiatives(team: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] = {
-    val teamName = team.getOrElse("")
-
-    val initiatives = Seq(
+  def allPlatformInitiatives(teamName: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] =
+    List(
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
-        team                  = team,
+        team                  = teamName,
         initiativeDescription = "To update default branch names - [Default Branch Tracker](" + url"https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master" + ") | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default Branch Migration: How To" + ").",
         completedLegend       = "Updated",
         inProgressLegend      = "Master"
@@ -54,7 +54,7 @@ class PlatformInitiativesService @Inject()(
         newArtefact           = "play",
         oldGroup              = "com.typesafe.play",
         oldArtefact           = "play",
-        team                  = team
+        team                  = teamName
       ),
       createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Latest",
@@ -63,7 +63,7 @@ class PlatformInitiativesService @Inject()(
         newArtefact           = "play",
         oldGroup              = "com.typesafe.play",
         oldArtefact           = "play",
-        team                  = team,
+        team                  = teamName,
         environment           = None
       ),
       createUpgradeInitiative(
@@ -72,7 +72,7 @@ class PlatformInitiativesService @Inject()(
         group                 = "uk.gov.hmrc",
         artefact              = "auth-client",
         version               = Version(5,6,0,"5.6.0"),
-        team                  = team
+        team                  = teamName
       ),
       createUpgradeInitiative(
         initiativeName        = "Scala 2.13 Upgrade",
@@ -80,7 +80,7 @@ class PlatformInitiativesService @Inject()(
         group                 = "org.scala-lang",
         artefact              = "scala-library",
         version               = Version(2,13,0,"2.13.0"),
-        team                  = team,
+        team                  = teamName,
       ),
       createMigrationInitiative(
         initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
@@ -89,7 +89,7 @@ class PlatformInitiativesService @Inject()(
         newArtefact           = "hmrc-mongo-common",
         oldGroup              = "uk.gov.hmrc",
         oldArtefact           = "simple-reactivemongo",
-        team                  = team,
+        team                  = teamName,
         inProgressLegend      = "Simple-Reactivemongo",
         completedLegend       = "HMRC-Mongo"
       ),
@@ -97,12 +97,18 @@ class PlatformInitiativesService @Inject()(
         initiativeName        = "Java 11 Upgrade",
         initiativeDescription = s"""[Java 11 upgrade](${url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?teamName=$teamName"}) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/TwLIH"})""",
         version               = Version.apply("11.0.0"),
-        team                  = team
+        team                  = teamName
+      ),
+      createJavaInitiative(
+        initiativeName        = "Java 21 Upgrade",
+        initiativeDescription = s"""[Java 21 upgrade](${url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?teamName=$teamName"}) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/xIACM"})""",
+        version               = Version.apply("21.0.0"),
+        team                  = teamName
       )
+    ).traverse(
+      _.filter(_.progress.target != 0)
+       .filter(!_.experimental || displayExperimentalInitiatives)
     )
-
-    Future.traverse(initiatives)(_.filter(_.progress.target != 0).filter(!_.experimental || displayExperimentalInitiatives))
-  }
 
   def createDefaultBranchInitiative(
      initiativeName       : String,
