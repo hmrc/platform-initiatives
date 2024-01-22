@@ -16,16 +16,14 @@
 
 package uk.gov.hmrc.platforminitiatives.services
 
-import org.mockito.MockitoSugar
-import org.mockito.ArgumentMatchersSugar
-import org.mockito.ArgumentMatchers.anyString
+import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, SlugDependencies, SlugJdkVersion, Version}
 
 import java.time.Instant
@@ -34,12 +32,11 @@ import scala.concurrent.Future
 
 class PlatformInitiativesServiceSpec
   extends AnyWordSpec
-    with Matchers
-    with MockitoSugar
-    with ArgumentMatchersSugar
-    with ScalaFutures
-    with IntegrationPatience
-  {
+     with Matchers
+     with MockitoSugar
+     with ArgumentMatchersSugar
+     with ScalaFutures
+     with IntegrationPatience {
 
   "createDefaultBranchInitiative" should {
     "return an initiative for DefaultBranches where branch name is not updated" in new Setup {
@@ -59,10 +56,10 @@ class PlatformInitiativesServiceSpec
   "createUpgradeInitiative" should {
     "return an initiative for a Dependency Upgrade" in new Setup {
       when(mockServiceDependenciesConnector.getServiceDependency(
-        group       = anyString,
-        artefact    = anyString,
+        group       = any[String],
+        artefact    = any[String],
         environment = any,
-        range       = anyString)(any[HeaderCarrier])
+        range       = any[String])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockSlugDependencies))
 
       val result: PlatformInitiative =
@@ -92,22 +89,22 @@ class PlatformInitiativesServiceSpec
   }
 
   "allPlatformInitiatives" should {
-    "return a future sequence of PlatformInitiatives" in new Setup {
+    "return all initiatives" in new Setup {
       when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
         .thenReturn(true)
       when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockRepositories))
       when(mockServiceDependenciesConnector.getServiceDependency(
-          group       = anyString,
-          artefact    = anyString,
+          group       = any[String],
+          artefact    = any[String],
           environment = any,
-          range       = anyString)(any[HeaderCarrier])
+          range       = any[String])(any[HeaderCarrier])
         )
         .thenReturn(Future.successful(mockSlugDependencies))
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Seq[PlatformInitiative] = platformInitiativesService.allPlatformInitiatives().futureValue
-      result.length shouldBe 7
+      result.length shouldBe 8
     }
   }
 
