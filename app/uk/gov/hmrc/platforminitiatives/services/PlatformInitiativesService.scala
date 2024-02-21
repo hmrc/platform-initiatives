@@ -19,12 +19,10 @@ package uk.gov.hmrc.platforminitiatives.services
 import cats.implicits._
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Environment, PlatformInitiative, Progress, SlugDependencies, Version}
+import uk.gov.hmrc.platforminitiatives.models._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.platforminitiatives.models.Environment.Production
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,14 +39,12 @@ class PlatformInitiativesService @Inject()(
 
   def allPlatformInitiatives(teamName: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] =
     List(
-      createMigrationWithVersionInitiative(
+      createMigrationInitiative(
         initiativeName        = "Tudor Crown Upgrade - Production",
         initiativeDescription = "Monitoring repos still using [play-frontend-hmrc](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,)&asCsv=false".toString.replace(")", "\\)") + " ) or below v8.5.0 of [play-frontend-hmrc-play-28](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-28&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [29](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-29&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [30](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-30&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2024/02" + ").",
-        newGroup              = "uk.gov.hmrc",
-        newArtefacts          = Seq("play-frontend-hmrc-play-28", "play-frontend-hmrc-play-29", "play-frontend-hmrc-play-30"),
-        newVersion            = Version(8, 5, 0, "8.5.0"),
-        oldGroup              = "uk.gov.hmrc",
-        oldArtefact           = "play-frontend-hmrc",
+        fromArtefacts         = Seq(Artefact("uk.gov.hmrc","play-frontend-hmrc")),
+        toArtefacts           = Seq(Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-28"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-29"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-30")),
+        targetVersion         = Some(Version(8, 5, 0, "8.5.0")),
         team                  = teamName
       ),
       createDefaultBranchInitiative(
@@ -61,19 +57,15 @@ class PlatformInitiativesService @Inject()(
       createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Production",
         initiativeDescription = "Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
-        newGroup              = "org.playframework",
-        newArtefact           = "play",
-        oldGroup              = "com.typesafe.play",
-        oldArtefact           = "play",
+        fromArtefacts         = Seq(Artefact("com.typesafe.play", "play")),
+        toArtefacts           = Seq(Artefact("org.playframework", "play")),
         team                  = teamName
       ),
       createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Latest",
         initiativeDescription = "Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=latest&scope[]=compile&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
-        newGroup              = "org.playframework",
-        newArtefact           = "play",
-        oldGroup              = "com.typesafe.play",
-        oldArtefact           = "play",
+        fromArtefacts         = Seq(Artefact("com.typesafe.play", "play")),
+        toArtefacts           = Seq(Artefact("org.playframework", "play")),
         team                  = teamName,
         environment           = None
       ),
@@ -96,10 +88,8 @@ class PlatformInitiativesService @Inject()(
       createMigrationInitiative(
         initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
         initiativeDescription = "Monitoring [repos still using simple-reactivemongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=simple-reactivemongo&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) and [repos now using hmrc-mongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc.mongo&artefact=hmrc-mongo-common&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
-        newGroup              = "uk.gov.hmrc.mongo",
-        newArtefact           = "hmrc-mongo-common",
-        oldGroup              = "uk.gov.hmrc",
-        oldArtefact           = "simple-reactivemongo",
+        fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "simple-reactivemongo")),
+        toArtefacts           = Seq(Artefact("uk.gov.hmrc.mongo", "hmrc-mongo-common")),
         team                  = teamName,
         inProgressLegend      = "Simple-Reactivemongo",
         completedLegend       = "HMRC-Mongo"
@@ -215,70 +205,34 @@ class PlatformInitiativesService @Inject()(
       }
 
   def createMigrationInitiative(
-   initiativeName       : String,
-   initiativeDescription: String,
-   newGroup             : String,
-   newArtefact          : String,
-   oldGroup             : String,
-   oldArtefact          : String,
-   team                 : Option[String]      = None,
-   environment          : Option[Environment] = Some(Environment.Production),
-   completedLegend      : String              = "Completed",
-   inProgressLegend     : String              = "Not Completed",
-   experimental         : Boolean             = false
- )(implicit
-   ec                   : ExecutionContext
- ): Future[PlatformInitiative] =
-    for {
-      firstArtefactDependencies   <- serviceDependenciesConnector.getServiceDependency(newGroup, newArtefact, environment)
-      secondArtefactDependencies  <- serviceDependenciesConnector.getServiceDependency(oldGroup, oldArtefact, environment)
-      allDependencies             =  (firstArtefactDependencies ++ secondArtefactDependencies)
-                                       // Filtering for exclusively owned repos
-                                       .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
-    } yield PlatformInitiative(
-      initiativeName              =  initiativeName,
-      initiativeDescription       =  initiativeDescription,
-      progress                    =  Progress(
-                                       current = allDependencies
-                                                   .count(x => x.depArtefact == newArtefact && x.depGroup == newGroup),
-                                       target  = allDependencies.length
-                                     ),
-      completedLegend             =  completedLegend,
-      inProgressLegend            =  inProgressLegend,
-      experimental                =  experimental
-    )
-
-  def createMigrationWithVersionInitiative(
     initiativeName        : String,
     initiativeDescription : String,
-    newGroup              : String,
-    newArtefacts          : Seq[String],
-    newVersion            : Version,
-    oldGroup              : String,
-    oldArtefact           : String,
-    team                  : Option[String] = None,
+    fromArtefacts         : Seq[Artefact],
+    toArtefacts           : Seq[Artefact],
+    targetVersion         : Option[Version]     = None,
+    team                  : Option[String]      = None,
     environment           : Option[Environment] = Some(Environment.Production),
-    experimental          : Boolean        = false
+    completedLegend       : String              = "Completed",
+    inProgressLegend      : String              = "Not Completed",
+    experimental          : Boolean             = false
   )(implicit
     ec                    : ExecutionContext
   ): Future[PlatformInitiative] =
     for {
-      firstArtefactDependencies  <- Future.sequence{
-                                      newArtefacts.map(serviceDependenciesConnector.getServiceDependency(newGroup, _, environment))
-                                    }.map(_.flatten)
-      secondArtefactDependencies <- serviceDependenciesConnector.getServiceDependency(oldGroup, oldArtefact, environment)
-      allDependencies             = (firstArtefactDependencies ++ secondArtefactDependencies)
-                                       // Filtering for exclusively owned repos
-                                      .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+      fromDependencies    <- fromArtefacts.traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment)).map(_.flatten)
+      targetDependencies  <- toArtefacts.traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment)).map(_.flatten)
+      allDependencies      = (fromDependencies ++ targetDependencies)
+                                // Filtering for exclusively owned repos
+                               .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
      } yield PlatformInitiative(
         initiativeName        = initiativeName,
         initiativeDescription = initiativeDescription,
         progress              = Progress(
-                                  current = firstArtefactDependencies.count(d => Version(d.depVersion) >= newVersion),
+                                  current = targetVersion.fold(targetDependencies.length)(v => targetDependencies.count(d => Version(d.depVersion) >= v)),
                                   target  = allDependencies.length
                                 ),
-        completedLegend       = "Completed",
-        inProgressLegend      = "Not Completed",
+        completedLegend       = completedLegend,
+        inProgressLegend      = inProgressLegend,
         experimental          = experimental
       )
 }

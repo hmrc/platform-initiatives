@@ -24,7 +24,7 @@ import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, SlugDependencies, SlugJdkVersion, Version}
+import uk.gov.hmrc.platforminitiatives.models._
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -88,8 +88,8 @@ class PlatformInitiativesServiceSpec
     }
   }
 
-  "createMigrationWithVersionInitiative" should {
-    "return an initiative for a Migration and Dependency Upgrade" in new Setup {
+  "createMigrationInitiative" should {
+    "return an initiative for a Migration and Dependency Upgrade when a targetVersion is supplied" in new Setup {
       when(mockServiceDependenciesConnector.getServiceDependency(
         group       = any[String],
         artefact    = same("test-dependency"),
@@ -116,17 +116,53 @@ class PlatformInitiativesServiceSpec
       ).thenReturn(Future.successful(mockTestPlay30Dependencies))
 
       val result: PlatformInitiative =
-        platformInitiativesService.createMigrationWithVersionInitiative(
+        platformInitiativesService.createMigrationInitiative(
           initiativeName        = "Test",
           initiativeDescription = "Test Description",
-          newGroup                = "uk.gov.hmrc",
-          newArtefacts            = Seq("test-dependency-play-28", "test-dependency-play-29", "test-dependency-play-30"),
-          newVersion              = Version(0, 2, 0),
-          oldGroup                = "uk.gov.hmrc",
-          oldArtefact             = "test-dependency"
+          fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "test-dependency")),
+          toArtefacts           = Seq(Artefact("uk.gov.hmrc", "test-dependency-play-28"), Artefact("uk.gov.hmrc", "test-dependency-play-29"), Artefact("uk.gov.hmrc", "test-dependency-play-30")),
+          targetVersion         = Some(Version(0, 2, 0))
         ).futureValue
       result.initiativeName shouldBe "Test"
       result.progress       shouldBe Progress(3,5)
+    }
+
+    "return an initiative for a Migration when no targetVersion is supplied" in new Setup {
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestOldDependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-28"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay28Dependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-29"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay29Dependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-30"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay30Dependencies))
+
+      val result: PlatformInitiative =
+        platformInitiativesService.createMigrationInitiative(
+          initiativeName        = "Test",
+          initiativeDescription = "Test Description",
+          fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "test-dependency")),
+          toArtefacts           = Seq(Artefact("uk.gov.hmrc", "test-dependency-play-28"), Artefact("uk.gov.hmrc", "test-dependency-play-29"), Artefact("uk.gov.hmrc", "test-dependency-play-30")),
+          targetVersion         = None
+        ).futureValue
+      result.initiativeName shouldBe "Test"
+      result.progress       shouldBe Progress(4,5)
     }
   }
 
