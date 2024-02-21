@@ -24,7 +24,7 @@ import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress, SlugDependencies, SlugJdkVersion, Version}
+import uk.gov.hmrc.platforminitiatives.models._
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -88,6 +88,84 @@ class PlatformInitiativesServiceSpec
     }
   }
 
+  "createMigrationInitiative" should {
+    "return an initiative for a Migration and Dependency Upgrade when a targetVersion is supplied" in new Setup {
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestOldDependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-28"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay28Dependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-29"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay29Dependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-30"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay30Dependencies))
+
+      val result: PlatformInitiative =
+        platformInitiativesService.createMigrationInitiative(
+          initiativeName        = "Test",
+          initiativeDescription = "Test Description",
+          fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "test-dependency")),
+          toArtefacts           = Seq(Artefact("uk.gov.hmrc", "test-dependency-play-28"), Artefact("uk.gov.hmrc", "test-dependency-play-29"), Artefact("uk.gov.hmrc", "test-dependency-play-30")),
+          targetVersion         = Some(Version(0, 2, 0))
+        ).futureValue
+      result.initiativeName shouldBe "Test"
+      result.progress       shouldBe Progress(3,5)
+    }
+
+    "return an initiative for a Migration when no targetVersion is supplied" in new Setup {
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestOldDependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-28"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay28Dependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-29"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay29Dependencies))
+      when(mockServiceDependenciesConnector.getServiceDependency(
+        group       = any[String],
+        artefact    = same("test-dependency-play-30"),
+        environment = any,
+        range       = any[String])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockTestPlay30Dependencies))
+
+      val result: PlatformInitiative =
+        platformInitiativesService.createMigrationInitiative(
+          initiativeName        = "Test",
+          initiativeDescription = "Test Description",
+          fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "test-dependency")),
+          toArtefacts           = Seq(Artefact("uk.gov.hmrc", "test-dependency-play-28"), Artefact("uk.gov.hmrc", "test-dependency-play-29"), Artefact("uk.gov.hmrc", "test-dependency-play-30")),
+          targetVersion         = None
+        ).futureValue
+      result.initiativeName shouldBe "Test"
+      result.progress       shouldBe Progress(4,5)
+    }
+  }
+
   "allPlatformInitiatives" should {
     "return all initiatives" in new Setup {
       when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
@@ -104,7 +182,7 @@ class PlatformInitiativesServiceSpec
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Seq[PlatformInitiative] = platformInitiativesService.allPlatformInitiatives().futureValue
-      result.length shouldBe 8
+      result.length shouldBe 9
     }
   }
 
@@ -165,6 +243,53 @@ class PlatformInitiativesServiceSpec
         depArtefact = "test-dependency",
         depVersion  = "1.5.0",
         teams       = Seq("team-1")
+      )
+    )
+
+    val mockTestOldDependencies = Seq(
+      SlugDependencies(
+        slugName    = "hmrc-test",
+        depGroup    = "uk.gov.hmrc",
+        depArtefact = "test-dependency",
+        depVersion  = "1.0.0",
+        teams       = Seq("team-2")
+      )
+    )
+
+    val mockTestPlay28Dependencies = Seq(
+      SlugDependencies(
+        slugName    = "hmrc-test",
+        depGroup    = "uk.gov.hmrc",
+        depArtefact = "test-dependency-play-28",
+        depVersion  = "0.1.0",
+        teams       = Seq("team-1")
+      ),
+      SlugDependencies(
+        slugName    = "hmrc-test",
+        depGroup    = "uk.gov.hmrc",
+        depArtefact = "test-dependency-play-28",
+        depVersion  = "1.8.0",
+        teams       = Seq("team-3")
+      )
+    )
+
+    val mockTestPlay29Dependencies = Seq(
+      SlugDependencies(
+        slugName    = "hmrc-test",
+        depGroup    = "uk.gov.hmrc",
+        depArtefact = "test-dependency-play-29",
+        depVersion  = "1.9.0",
+        teams       = Seq("team-4")
+      )
+    )
+
+    val mockTestPlay30Dependencies = Seq(
+      SlugDependencies(
+        slugName    = "hmrc-test",
+        depGroup    = "uk.gov.hmrc",
+        depArtefact = "test-dependency-play-30",
+        depVersion  = "1.2.0",
+        teams       = Seq("team-5")
       )
     )
 
