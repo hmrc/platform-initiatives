@@ -21,9 +21,10 @@ import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
-import uk.gov.hmrc.platforminitiatives.models.{Environment, PlatformInitiative, Progress, Version}
+import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Environment, PlatformInitiative, Progress, SlugDependencies, Version}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.platforminitiatives.models.Environment.Production
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,6 +41,16 @@ class PlatformInitiativesService @Inject()(
 
   def allPlatformInitiatives(teamName: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] =
     List(
+      createMigrationWithVersionInitiative(
+        initiativeName        = "Tudor Crown Upgrade - Production",
+        initiativeDescription = "Monitoring repos still using [play-frontend-hmrc](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,)&asCsv=false".toString.replace(")", "\\)") + " ) or below v8.5.0 of [play-frontend-hmrc-play-28](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-28&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [29](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-29&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [30](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-30&team=$teamName&flag=production&scope[]=compile&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2024/02" + ").",
+        newGroup              = "uk.gov.hmrc",
+        newArtefacts          = Seq("play-frontend-hmrc-play-28", "play-frontend-hmrc-play-29", "play-frontend-hmrc-play-30"),
+        newVersion            = Version(8, 5, 0, "8.5.0"),
+        oldGroup              = "uk.gov.hmrc",
+        oldArtefact           = "play-frontend-hmrc",
+        team                  = teamName
+      ),
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
         team                  = teamName,
@@ -236,4 +247,38 @@ class PlatformInitiativesService @Inject()(
       inProgressLegend            =  inProgressLegend,
       experimental                =  experimental
     )
+
+  def createMigrationWithVersionInitiative(
+    initiativeName        : String,
+    initiativeDescription : String,
+    newGroup              : String,
+    newArtefacts          : Seq[String],
+    newVersion            : Version,
+    oldGroup              : String,
+    oldArtefact           : String,
+    team                  : Option[String] = None,
+    environment           : Option[Environment] = Some(Environment.Production),
+    experimental          : Boolean        = false
+  )(implicit
+    ec                    : ExecutionContext
+  ): Future[PlatformInitiative] =
+    for {
+      firstArtefactDependencies  <- Future.sequence{
+                                      newArtefacts.map(serviceDependenciesConnector.getServiceDependency(newGroup, _, environment))
+                                    }.map(_.flatten)
+      secondArtefactDependencies <- serviceDependenciesConnector.getServiceDependency(oldGroup, oldArtefact, environment)
+      allDependencies             = (firstArtefactDependencies ++ secondArtefactDependencies)
+                                       // Filtering for exclusively owned repos
+                                      .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+     } yield PlatformInitiative(
+        initiativeName        = initiativeName,
+        initiativeDescription = initiativeDescription,
+        progress              = Progress(
+                                  current = firstArtefactDependencies.count(d => Version(d.depVersion) >= newVersion),
+                                  target  = allDependencies.length
+                                ),
+        completedLegend       = "Completed",
+        inProgressLegend      = "Not Completed",
+        experimental          = experimental
+      )
 }
