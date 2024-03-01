@@ -219,11 +219,15 @@ class PlatformInitiativesService @Inject()(
     ec                    : ExecutionContext
   ): Future[PlatformInitiative] =
     for {
-      fromDependencies    <- fromArtefacts.traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment)).map(_.flatten)
-      targetDependencies  <- toArtefacts.traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment)).map(_.flatten)
-      allDependencies      = (fromDependencies ++ targetDependencies)
-                                // Filtering for exclusively owned repos
-                               .filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))
+      fromDependencies    <- fromArtefacts
+                                .traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment))
+                                .map(_.flatten)
+                                .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
+      targetDependencies  <- toArtefacts
+                                .traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment))
+                                .map(_.flatten)
+                                .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
+      allDependencies      = fromDependencies ++ targetDependencies
      } yield PlatformInitiative(
         initiativeName        = initiativeName,
         initiativeDescription = initiativeDescription,
