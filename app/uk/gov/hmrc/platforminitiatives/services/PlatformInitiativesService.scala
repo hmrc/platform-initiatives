@@ -21,6 +21,7 @@ import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
+import uk.gov.hmrc.platforminitiatives.models.DependencyScope.{Compile, Test}
 import uk.gov.hmrc.platforminitiatives.models._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -39,6 +40,15 @@ class PlatformInitiativesService @Inject()(
 
   def allPlatformInitiatives(teamName: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] =
     List(
+      createMigrationInitiative(
+        initiativeName        = "Migration to new UI test tooling",
+        initiativeDescription = "Migration from [webdriver-factory](" + url"https://catalogue-labs.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=webdriver-factory&versionRange=[0.0.0,)&asCsv=false&team=$teamName&flag=latest&repoType[]=Service&repoType[]=Library&repoType[]=Test&repoType[]=Other&scope[]=test".toString.replace(")", "\\)") + " ) to [ui-test-runner](" + url"https://catalogue-labs.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=ui-test-runner&versionRange=[0.0.0,)&asCsv=false&team=$teamName&flag=latest&repoType[]=Service&repoType[]=Library&repoType[]=Test&repoType[]=Other&scope[]=test".toString.replace(")", "\\)") + " )  | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=804554026" + ").",
+        fromArtefacts         = Seq(Artefact("uk.gov.hmrc","webdriver-factory")),
+        toArtefacts           = Seq(Artefact("uk.gov.hmrc", "ui-test-runner")),
+        team                  = teamName,
+        environment           = None,
+        scopes                = List(Test)
+      ),
       createMigrationInitiative(
         initiativeName        = "Tudor Crown Upgrade - Production",
         initiativeDescription = "Monitoring repos still using [play-frontend-hmrc](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc&team=$teamName&flag=production&versionRange=[0.0.0,)&asCsv=false".toString.replace(")", "\\)") + " ) or below v8.5.0 of [play-frontend-hmrc-play-28](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-28&team=$teamName&flag=production&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [29](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-29&team=$teamName&flag=production&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [30](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-30&team=$teamName&flag=production&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=815170354" + ").",
@@ -181,6 +191,7 @@ class PlatformInitiativesService @Inject()(
     version              : Version,
     team                 : Option[String] = None,
     environment          : Option[Environment] = Some(Environment.Production),
+    scopes               : List[DependencyScope] = List(Compile),
     completedLegend      : String = "Completed",
     inProgressLegend     : String = "Not Completed",
     experimental         : Boolean = false
@@ -188,7 +199,7 @@ class PlatformInitiativesService @Inject()(
     ec                   : ExecutionContext
   ): Future[PlatformInitiative] =
     serviceDependenciesConnector
-      .getServiceDependency(group, artefact, environment)
+      .getMetaArtefactDependency(group, artefact, environment, scopes)
       .map(sd => team.fold(sd)(t => sd.filter(_.teams == Seq(t)))) // Filtering for exclusively owned repos, if set
       .map { dependencies =>
         PlatformInitiative(
@@ -205,38 +216,40 @@ class PlatformInitiativesService @Inject()(
       }
 
   def createMigrationInitiative(
-    initiativeName        : String,
-    initiativeDescription : String,
-    fromArtefacts         : Seq[Artefact],
-    toArtefacts           : Seq[Artefact],
-    targetVersion         : Option[Version]     = None,
-    team                  : Option[String]      = None,
-    environment           : Option[Environment] = Some(Environment.Production),
-    completedLegend       : String              = "Completed",
-    inProgressLegend      : String              = "Not Completed",
-    experimental          : Boolean             = false
+    initiativeName       : String,
+    initiativeDescription: String,
+    fromArtefacts        : Seq[Artefact],
+    toArtefacts          : Seq[Artefact],
+    targetVersion        : Option[Version]       = None,
+    team                 : Option[String]        = None,
+    environment          : Option[Environment]   = Some(Environment.Production),
+    scopes               : List[DependencyScope] = List(Compile),
+    completedLegend      : String                = "Completed",
+    inProgressLegend     : String                = "Not Completed",
+    experimental         : Boolean               = false
   )(implicit
-    ec                    : ExecutionContext
+    ec                   : ExecutionContext
   ): Future[PlatformInitiative] =
     for {
-      fromDependencies    <- fromArtefacts
-                                .traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment))
+      fromDependencies     <- fromArtefacts
+                                .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
                                 .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
-      targetDependencies  <- toArtefacts
-                                .traverse(a => serviceDependenciesConnector.getServiceDependency(a.group, a.name, environment))
+      targetDependencies   <- toArtefacts
+                                .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
                                 .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
-      allDependencies      = fromDependencies ++ targetDependencies
-     } yield PlatformInitiative(
-        initiativeName        = initiativeName,
-        initiativeDescription = initiativeDescription,
-        progress              = Progress(
-                                  current = targetVersion.fold(targetDependencies.length)(v => targetDependencies.count(d => Version(d.depVersion) >= v)),
-                                  target  = allDependencies.length
-                                ),
-        completedLegend       = completedLegend,
-        inProgressLegend      = inProgressLegend,
-        experimental          = experimental
-      )
+      allDependencies       = (fromDependencies ++ targetDependencies)
+    } yield PlatformInitiative(
+      initiativeName        = initiativeName,
+      initiativeDescription = initiativeDescription,
+      progress              = Progress(
+                                current = targetVersion.fold(targetDependencies.length)(v => targetDependencies.count(d => Version(d.depVersion) >= v)),
+                                target  = allDependencies.length
+                              ),
+      completedLegend       = completedLegend,
+      inProgressLegend      = inProgressLegend,
+      experimental          = experimental
+    )
+
 }

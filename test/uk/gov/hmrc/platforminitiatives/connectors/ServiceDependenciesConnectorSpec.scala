@@ -23,10 +23,13 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.mvc.Results
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
+import uk.gov.hmrc.platforminitiatives.models.DependencyScope.Compile
+import uk.gov.hmrc.platforminitiatives.models.Environment.Production
+import uk.gov.hmrc.platforminitiatives.models.MetaArtefactDependency
 
 class ServiceDependenciesConnectorSpec
   extends AnyWordSpec
@@ -59,6 +62,18 @@ class ServiceDependenciesConnectorSpec
 
       val dependencies = connector.getAllDependencies().futureValue
       dependencies.head.repositoryName mustBe "hmrc-test"
+    }
+  }
+
+  "ServiceDependenciesConnector.getMetaArtefactDependency" should {
+    "return correct JSON for MetaArtefactDependency" in {
+      stubFor(
+        get(urlEqualTo(s"/api/repoDependencies?group=uk.gov.hmrc&artefact=test-dependency&versionRange=%5B0.0.0,)&flag=Production&scope=compile&repoType=Service"))
+          .willReturn(aResponse().withBodyFile("service-dependencies/metaArtefactDependency.json"))
+      )
+
+      val dependencies = connector.getMetaArtefactDependency("uk.gov.hmrc", "test-dependency", Some(Production), List(Compile)).futureValue
+      dependencies.head mustBe MetaArtefactDependency("hmrc-test", "uk.gov.hmrc", "test-dependency", "1.0.0", Seq("team1"))
     }
   }
 

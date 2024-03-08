@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,24 @@
 package uk.gov.hmrc.platforminitiatives.models
 
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{OFormat, __}
+import play.api.libs.json.Format.GenericFormat
+import play.api.libs.json._
 
-case class SlugDependencies(
-  slugName   : String,
-  depGroup   : String,
+case class MetaArtefactDependency(
+  repoName: String,
+  depGroup: String,
   depArtefact: String,
-  depVersion : String,
-  teams      : Seq[String]
+  depVersion: String,
+  teams: Seq[String]
 )
 
-object SlugDependencies {
-  implicit val format: OFormat[SlugDependencies] =
-  ( (__ \ "slugName"    ).format[String]
-  ~ (__ \ "depGroup"    ).format[String]
-  ~ (__ \ "depArtefact" ).format[String]
-  ~ (__ \ "depVersion"  ).format[String]
-  ~ (__ \ "teams"       ).format[Seq[String]]
-  )(SlugDependencies.apply, unlift(SlugDependencies.unapply))
+object MetaArtefactDependency {
+  implicit val formats: OFormat[MetaArtefactDependency] = {
+    ((__ \ "repoName"    ).format[String]
+    ~ (__ \ "depGroup"   ).format[String]
+    ~ (__ \ "depArtefact").format[String]
+    ~ (__ \ "depVersion" ).format[String]
+    ~ (__ \ "teams"      ).format[Seq[String]]
+    )(MetaArtefactDependency.apply, unlift(MetaArtefactDependency.unapply))
+  }
 }

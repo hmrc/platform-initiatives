@@ -55,12 +55,13 @@ class PlatformInitiativesServiceSpec
 
   "createUpgradeInitiative" should {
     "return an initiative for a Dependency Upgrade" in new Setup {
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = any[String],
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
-      ).thenReturn(Future.successful(mockSlugDependencies))
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+      ).thenReturn(Future.successful(mockMetaArtefactDependencies))
 
       val result: PlatformInitiative =
         platformInitiativesService.createUpgradeInitiative(
@@ -71,7 +72,7 @@ class PlatformInitiativesServiceSpec
           version               = Version(0, 2, 0)
         ).futureValue
       result.initiativeName shouldBe "Test"
-      result.progress       shouldBe Progress(2,2)
+      result.progress       shouldBe Progress(2,3)
     }
   }
 
@@ -90,29 +91,33 @@ class PlatformInitiativesServiceSpec
 
   "createMigrationInitiative" should {
     "return an initiative for a Migration and Dependency Upgrade when a targetVersion is supplied" in new Setup {
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestOldDependencies))
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency-play-28"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay28Dependencies))
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency-play-29"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay29Dependencies))
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency-play-30"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay30Dependencies))
 
       val result: PlatformInitiative =
@@ -128,29 +133,33 @@ class PlatformInitiativesServiceSpec
     }
 
     "return an initiative for a Migration when no targetVersion is supplied" in new Setup {
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestOldDependencies))
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency-play-28"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay28Dependencies))
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency-play-29"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay29Dependencies))
-      when(mockServiceDependenciesConnector.getServiceDependency(
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = same("test-dependency-play-30"),
-        environment = any,
-        range       = any[String])(any[HeaderCarrier])
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay30Dependencies))
 
       val result: PlatformInitiative =
@@ -172,17 +181,18 @@ class PlatformInitiativesServiceSpec
         .thenReturn(true)
       when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockRepositories))
-      when(mockServiceDependenciesConnector.getServiceDependency(
-          group       = any[String],
-          artefact    = any[String],
-          environment = any,
-          range       = any[String])(any[HeaderCarrier])
-        )
-        .thenReturn(Future.successful(mockSlugDependencies))
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
+        group       = any[String],
+        artefact    = any[String],
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+      )
+        .thenReturn(Future.successful(mockMetaArtefactDependencies))
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Seq[PlatformInitiative] = platformInitiativesService.allPlatformInitiatives().futureValue
-      result.length shouldBe 9
+      result.length shouldBe 10
     }
   }
 
@@ -229,26 +239,33 @@ class PlatformInitiativesServiceSpec
       )
     )
 
-    val mockSlugDependencies = Seq(
-      SlugDependencies(
-        slugName    = "hmrc-test",
+    val mockMetaArtefactDependencies = Seq(
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency",
         depVersion  = "1.0.0",
         teams       = Seq("team-2")
       ),
-      SlugDependencies(
-        slugName    = "hmrc-test",
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency",
         depVersion  = "1.5.0",
         teams       = Seq("team-1")
+      ),
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
+        depGroup   = "uk.gov.hmrc",
+        depArtefact = "test-dependency",
+        depVersion  = "0.1.0",
+        teams       = Seq("team-3")
       )
     )
 
     val mockTestOldDependencies = Seq(
-      SlugDependencies(
-        slugName    = "hmrc-test",
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency",
         depVersion  = "1.0.0",
@@ -257,15 +274,15 @@ class PlatformInitiativesServiceSpec
     )
 
     val mockTestPlay28Dependencies = Seq(
-      SlugDependencies(
-        slugName    = "hmrc-test",
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency-play-28",
         depVersion  = "0.1.0",
         teams       = Seq("team-1")
       ),
-      SlugDependencies(
-        slugName    = "hmrc-test",
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency-play-28",
         depVersion  = "1.8.0",
@@ -274,8 +291,8 @@ class PlatformInitiativesServiceSpec
     )
 
     val mockTestPlay29Dependencies = Seq(
-      SlugDependencies(
-        slugName    = "hmrc-test",
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency-play-29",
         depVersion  = "1.9.0",
@@ -284,8 +301,8 @@ class PlatformInitiativesServiceSpec
     )
 
     val mockTestPlay30Dependencies = Seq(
-      SlugDependencies(
-        slugName    = "hmrc-test",
+      MetaArtefactDependency(
+        repoName    = "hmrc-test",
         depGroup    = "uk.gov.hmrc",
         depArtefact = "test-dependency-play-30",
         depVersion  = "1.2.0",
