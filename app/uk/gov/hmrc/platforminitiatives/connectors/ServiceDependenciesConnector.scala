@@ -19,7 +19,7 @@ package uk.gov.hmrc.platforminitiatives.connectors
 import play.api.cache.AsyncCacheApi
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
-import uk.gov.hmrc.platforminitiatives.models.{Dependencies, Environment, SlugDependencies, SlugJdkVersion}
+import uk.gov.hmrc.platforminitiatives.models._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
@@ -47,15 +47,16 @@ class ServiceDependenciesConnector @Inject() (
     }
   }
 
-  def getServiceDependency(
+  def getMetaArtefactDependency(
     group       : String,
     artefact    : String,
     environment : Option[Environment],
+    scopes      : List[DependencyScope],
     range       : String = "[0.0.0,)"
-  )(implicit hc: HeaderCarrier): Future[Seq[SlugDependencies]] = {
-    val scope = "compile"
-    httpClient.GET[Seq[SlugDependencies]](
-      url"$servicesDependenciesBaseUrl/api/serviceDeps?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=$scope"
+  )(implicit hc: HeaderCarrier): Future[Seq[MetaArtefactDependency]] = {
+    val repoType = if (environment.isDefined) List("Service") else List("Service", "Library", "Test", "Other")
+    httpClient.GET[Seq[MetaArtefactDependency]](
+      url"$servicesDependenciesBaseUrl/api/repoDependencies?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=${scopes.map(_.asString)}&repoType=$repoType"
     )
   }
 

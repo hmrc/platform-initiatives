@@ -1,0 +1,7 @@
+[{
+  "repoName"    : "hmrc-test",
+  "depGroup"    : "uk.gov.hmrc",
+  "depArtefact" : "test-dependency",
+  "depVersion"  : "1.0.0",
+  "teams"       : ["team1"]
+}]
