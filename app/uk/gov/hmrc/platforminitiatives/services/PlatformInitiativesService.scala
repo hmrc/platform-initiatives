@@ -29,14 +29,16 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class PlatformInitiativesService @Inject()(
-    configuration                 : Configuration,
-    teamsAndRepositoriesConnector : TeamsAndRepositoriesConnector,
-    serviceDependenciesConnector  : ServiceDependenciesConnector,
-    cc                            : ControllerComponents
-  ) extends BackendController(cc) {
+  configuration                 : Configuration,
+  teamsAndRepositoriesConnector : TeamsAndRepositoriesConnector,
+  serviceDependenciesConnector  : ServiceDependenciesConnector,
+  cc                            : ControllerComponents
+) extends BackendController(cc) {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val displayExperimentalInitiatives: Boolean = configuration.get[Boolean]("initiatives.service.includeExperimental")
+
+  val displayExperimentalInitiatives: Boolean =
+    configuration.get[Boolean]("initiatives.service.includeExperimental")
 
   def allPlatformInitiatives(teamName: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] =
     List(
@@ -116,10 +118,11 @@ class PlatformInitiativesService @Inject()(
         version               = Version.apply("21.0.0"),
         team                  = teamName
       )
-    ).traverse(
-      _.filter(_.progress.target != 0)
-       .filter(!_.experimental || displayExperimentalInitiatives)
-    )
+    ).sequence
+     .map(
+       _.filter(_.progress.target != 0)
+        .filter(!_.experimental || displayExperimentalInitiatives)
+     )
 
   def createDefaultBranchInitiative(
      initiativeName       : String,
@@ -189,12 +192,12 @@ class PlatformInitiativesService @Inject()(
     group                : String,
     artefact             : String,
     version              : Version,
-    team                 : Option[String] = None,
-    environment          : Option[Environment] = Some(Environment.Production),
+    team                 : Option[String]        = None,
+    environment          : Option[Environment]   = Some(Environment.Production),
     scopes               : List[DependencyScope] = List(Compile),
-    completedLegend      : String = "Completed",
-    inProgressLegend     : String = "Not Completed",
-    experimental         : Boolean = false
+    completedLegend      : String                = "Completed",
+    inProgressLegend     : String                = "Not Completed",
+    experimental         : Boolean               = false
   )(implicit
     ec                   : ExecutionContext
   ): Future[PlatformInitiative] =
@@ -251,5 +254,4 @@ class PlatformInitiativesService @Inject()(
       inProgressLegend      = inProgressLegend,
       experimental          = experimental
     )
-
 }

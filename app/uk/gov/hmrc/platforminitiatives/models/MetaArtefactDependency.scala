@@ -21,20 +21,19 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
 
 case class MetaArtefactDependency(
-  repoName: String,
-  depGroup: String,
+  repoName   : String,
+  depGroup   : String,
   depArtefact: String,
-  depVersion: String,
-  teams: Seq[String]
+  depVersion : String,
+  teams      : Seq[String]
 )
 
 object MetaArtefactDependency {
-  implicit val formats: OFormat[MetaArtefactDependency] = {
-    ((__ \ "repoName"    ).format[String]
+  implicit val formats: OFormat[MetaArtefactDependency] =
+    ( (__ \ "repoName"   ).format[String]
     ~ (__ \ "depGroup"   ).format[String]
     ~ (__ \ "depArtefact").format[String]
     ~ (__ \ "depVersion" ).format[String]
     ~ (__ \ "teams"      ).format[Seq[String]]
     )(MetaArtefactDependency.apply, unlift(MetaArtefactDependency.unapply))
-  }
 }
