@@ -53,18 +53,6 @@ class ServiceDependenciesConnectorSpec
 
   private val connector = app.injector.instanceOf[ServiceDependenciesConnector]
 
-  "ServiceDependenciesConnector.getAllDependencies" should {
-    "return correct JSON for Dependencies" in {
-      stubFor(
-        get(urlEqualTo(s"/api/dependencies"))
-          .willReturn(aResponse().withBodyFile("service-dependencies/dependencies.json"))
-      )
-
-      val dependencies = connector.getAllDependencies().futureValue
-      dependencies.head.repositoryName mustBe "hmrc-test"
-    }
-  }
-
   "ServiceDependenciesConnector.getMetaArtefactDependency" should {
     "return correct JSON for MetaArtefactDependency" in {
       stubFor(
