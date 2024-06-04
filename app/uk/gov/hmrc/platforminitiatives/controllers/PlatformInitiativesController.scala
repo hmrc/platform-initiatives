@@ -26,10 +26,11 @@ import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
 
 @Singleton
 class PlatformInitiativesController @Inject()(
-   platformInitiativesService:   PlatformInitiativesService,
-   cc                        :   ControllerComponents
- )(implicit ec: ExecutionContext)
-  extends BackendController(cc) {
+   platformInitiativesService: PlatformInitiativesService,
+   cc                        : ControllerComponents
+ )(implicit
+   ec: ExecutionContext
+ ) extends BackendController(cc) {
 
   val allInitiatives: Action[AnyContent] =
     Action.async {
