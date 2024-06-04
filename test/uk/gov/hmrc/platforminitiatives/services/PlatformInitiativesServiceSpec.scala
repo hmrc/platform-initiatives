@@ -198,11 +198,12 @@ class PlatformInitiativesServiceSpec
 
   private[this] trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
+    val includeExperimental = false
     val mockConfiguration                : Configuration                 = mock[Configuration]
     val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
     val mockServiceDependenciesConnector : ServiceDependenciesConnector  = mock[ServiceDependenciesConnector]
     val mockControllerComponents         : ControllerComponents          = mock[ControllerComponents]
-    val platformInitiativesService       : PlatformInitiativesService    = new PlatformInitiativesService(mockConfiguration, mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
+    lazy val platformInitiativesService  : PlatformInitiativesService    = new PlatformInitiativesService(mockConfiguration, mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
 
     val mockRepositories: Seq[RepositoryDisplayDetails] = Seq(
       RepositoryDisplayDetails(

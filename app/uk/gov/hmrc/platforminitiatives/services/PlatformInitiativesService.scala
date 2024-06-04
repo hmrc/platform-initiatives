@@ -44,7 +44,23 @@ class PlatformInitiativesService @Inject()(
     List(
       createMigrationInitiative(
         initiativeName        = "Migration to new UI test tooling",
-        initiativeDescription = "Migration from [webdriver-factory](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=webdriver-factory&versionRange=[0.0.0,)&asCsv=false&team=$teamName&flag=latest&repoType[]=Service&repoType[]=Library&repoType[]=Test&repoType[]=Other&scope[]=test".toString.replace(")", "\\)") + " ) to [ui-test-runner](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=ui-test-runner&versionRange=[0.0.0,)&asCsv=false&team=$teamName&flag=latest&repoType[]=Service&repoType[]=Library&repoType[]=Test&repoType[]=Other&scope[]=test".toString.replace(")", "\\)") + " )  | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=804554026" + ").",
+        initiativeDescription = s"""Migration from [webdriver-factory](${
+                                  dependencyExplorerUrl(
+                                    group     = "uk.gov.hmrc",
+                                    artefact  = "webdriver-factory",
+                                    team      = teamName,
+                                    repoTypes = Seq("Service", "Library", "Test", "Other"),
+                                    scopes    = Seq("test")
+                                  )
+                                 } ) to [ui-test-runner](${
+                                  dependencyExplorerUrl(
+                                    group     = "uk.gov.hmrc",
+                                    artefact  = "ui-test-runner",
+                                    team      = teamName,
+                                    repoTypes = Seq("Service", "Library", "Test", "Other"),
+                                    scopes    = Seq("test")
+                                  )
+                                })  | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=804554026"}).""",
         fromArtefacts         = Seq(Artefact("uk.gov.hmrc","webdriver-factory")),
         toArtefacts           = Seq(Artefact("uk.gov.hmrc", "ui-test-runner")),
         team                  = teamName,
@@ -53,53 +69,131 @@ class PlatformInitiativesService @Inject()(
       ),
       createMigrationInitiative(
         initiativeName        = "Tudor Crown Upgrade - Production",
-        initiativeDescription = "Monitoring repos still using [play-frontend-hmrc](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc&team=$teamName&flag=production&versionRange=[0.0.0,)&asCsv=false".toString.replace(")", "\\)") + " ) or below v8.5.0 of [play-frontend-hmrc-play-28](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-28&team=$teamName&flag=production&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [29](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-29&team=$teamName&flag=production&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [30](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=play-frontend-hmrc-play-30&team=$teamName&flag=production&versionRange=[0.0.0,8.5.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=815170354" + ").",
+        initiativeDescription = s"""Monitoring repos still using [play-frontend-hmrc](${
+                                  dependencyExplorerUrl(
+                                    group    = "uk.gov.hmrc",
+                                    artefact = "play-frontend-hmrc",
+                                    flag     = "production",
+                                    team     = teamName
+                                  )
+                                }) or below v8.5.0 of [play-frontend-hmrc-play-28](${
+                                  dependencyExplorerUrl(
+                                    group        = "uk.gov.hmrc",
+                                    artefact     = "play-frontend-hmrc-play-28",
+                                    team         = teamName,
+                                    flag         = "production",
+                                    versionRange = Some("[0.0.0,8.5.0)")
+                                  )
+                                }) | [29](${
+                                  dependencyExplorerUrl(
+                                    group        = "uk.gov.hmrc",
+                                    artefact     = "play-frontend-hmrc-play-29",
+                                    flag         = "production",
+                                    team         = teamName,
+                                    versionRange = Some("[0.0.0,8.5.0)")
+                                  )
+                                } ) | [30](${
+                                  dependencyExplorerUrl(
+                                   group        = "uk.gov.hmrc",
+                                   artefact     = "play-frontend-hmrc-play-30",
+                                   team         = teamName,
+                                   flag         = "production",
+                                   versionRange = Some("[0.0.0,8.5.0)")
+                                  )
+                                } ) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=815170354"}).""",
         fromArtefacts         = Seq(Artefact("uk.gov.hmrc","play-frontend-hmrc")),
         toArtefacts           = Seq(Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-28"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-29"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-30")),
-        targetVersion         = Some(Version(8, 5, 0, "8.5.0")),
+        targetVersion         = Some(Version("8.5.0")),
         team                  = teamName
       ),
       createDefaultBranchInitiative(
         initiativeName        = "Update Default Branch Terminology",
         team                  = teamName,
-        initiativeDescription = "To update default branch names - [Default Branch Tracker](" + url"https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master" + ") | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default Branch Migration: How To" + ").",
+        initiativeDescription = s"""To update default branch names - [Default Branch Tracker](${
+                                  url"https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master"
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default Branch Migration: How To"}).""",
         completedLegend       = "Updated",
         inProgressLegend      = "Master"
       ),
       createMigrationInitiative(
+        initiativeName        = "Scala 3 Upgrade",
+        initiativeDescription = s"""Scala 3 upgrade [repos still using Scala 2.13 and below](${
+                                  dependencyExplorerUrl(
+                                    group    = "org.scala-lang",
+                                    artefact = "scala-library",
+                                    flag     = "production",
+                                    team     = teamName
+                                  )
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449"}).""",
+        fromArtefacts         = Seq(Artefact("org.scala-lang", "scala-library")),
+        toArtefacts           = Seq(Artefact("org.scala-lang", "scala3-library")),
+        team                  = teamName,
+        experimental          = true
+      ),
+      createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Production",
-        initiativeDescription = "Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&flag=production&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
+        initiativeDescription = s"""Play 3.0 upgrade - Deprecate [Play 2.9 and below](${
+                                  dependencyExplorerUrl(
+                                    group        = "com.typesafe.play",
+                                    artefact     = "play",
+                                    flag         = "production",
+                                    team         = teamName,
+                                    versionRange = Some("[0.0.0,3.0.0)")
+                                  )
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449"}).""",
         fromArtefacts         = Seq(Artefact("com.typesafe.play", "play")),
         toArtefacts           = Seq(Artefact("org.playframework", "play")),
         team                  = teamName
       ),
       createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Latest",
-        initiativeDescription = "Play 3.0 upgrade - Deprecate [Play 2.9 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=com.typesafe.play&artefact=play&team=$teamName&repoType[]=Service&repoType[]=Library&repoType[]=Prototype&repoType[]=Test&repoType[]=Other&versionRange=[0.0.0,3.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449" + ").",
+        initiativeDescription = s"""Play 3.0 upgrade - Deprecate [Play 2.9 and below](${
+                                  dependencyExplorerUrl(
+                                    group        = "com.typesafe.play",
+                                    artefact     = "play",
+                                    team         = teamName,
+                                    repoTypes    = Seq("Service", "Library", "Test", "Other"),
+                                    versionRange = Some("[0.0.0,3.0.0)")
+                                  )
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449"}).""",
         fromArtefacts         = Seq(Artefact("com.typesafe.play", "play")),
         toArtefacts           = Seq(Artefact("org.playframework", "play")),
         team                  = teamName,
         environment           = None
       ),
       createUpgradeInitiative(
-        initiativeName        = "Auth-client upgrade",
-        initiativeDescription = "[CL250 Security upgrade required](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&versionRange=[0.0.0,5.6.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/x/RgpxDw" + ").",
-        group                 = "uk.gov.hmrc",
-        artefact              = "auth-client",
-        version               = Version(5,6,0,"5.6.0"),
-        team                  = teamName
-      ),
-      createUpgradeInitiative(
         initiativeName        = "Scala 2.13 Upgrade",
-        initiativeDescription = "Scala 2.13 upgrade - Deprecate [Scala 2.12 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=org.scala-lang&artefact=scala-library&team=$teamName&flag=production&versionRange=[0.0.0,2.13.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
+        initiativeDescription = s"""Scala 2.13 upgrade - Deprecate [Scala 2.12 and below](${
+                                  dependencyExplorerUrl(
+                                    group        = "org.scala-lang",
+                                    artefact     = "scala-library",
+                                    flag         = "production",
+                                    team         = teamName,
+                                    versionRange = Some("[0.0.0,2.13.0)")
+                                  )
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511"}).""",
         group                 = "org.scala-lang",
         artefact              = "scala-library",
-        version               = Version(2,13,0,"2.13.0"),
+        version               = Version("2.13.0"),
         team                  = teamName,
       ),
       createMigrationInitiative(
         initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
-        initiativeDescription = "Monitoring [repos still using simple-reactivemongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=simple-reactivemongo&team=$teamName&flag=production&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) and [repos now using hmrc-mongo](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc.mongo&artefact=hmrc-mongo-common&team=$teamName&flag=production&versionRange=[0.0.0,99.0.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available" + ").",
+        initiativeDescription = s"""Monitoring [repos still using simple-reactivemongo](${
+                                  dependencyExplorerUrl(
+                                    group    = "uk.gov.hmrc",
+                                    artefact = "simple-reactivemongo",
+                                    flag     = "production",
+                                    team     = teamName
+                                  )
+                                }) and [repos now using hmrc-mongo](${
+                                  dependencyExplorerUrl(
+                                    group    = "uk.gov.hmrc.mongo",
+                                    artefact = "hmrc-mongo-common",
+                                    flag     = "production",
+                                    team     = teamName
+                                  )
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available"}).""",
         fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "simple-reactivemongo")),
         toArtefacts           = Seq(Artefact("uk.gov.hmrc.mongo", "hmrc-mongo-common")),
         team                  = teamName,
@@ -108,13 +202,17 @@ class PlatformInitiativesService @Inject()(
       ),
       createJavaInitiative(
         initiativeName        = "Java 11 Upgrade",
-        initiativeDescription = s"""[Java 11 upgrade](${url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?teamName=$teamName"}) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/TwLIH"})""",
-        version               = Version.apply("11.0.0"),
+        initiativeDescription = s"""[Java 11 upgrade](${
+                                  url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?teamName=$teamName"
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/TwLIH"})""",
+        version               = Version("11.0.0"),
         team                  = teamName
       ),
       createJavaInitiative(
         initiativeName        = "Java 21 Upgrade",
-        initiativeDescription = s"""[Java 21 upgrade](${url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?teamName=$teamName"}) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/xIACM"})""",
+        initiativeDescription = s"""[Java 21 upgrade](${
+                                  url"https://catalogue.tax.service.gov.uk/jdkexplorer/latest?teamName=$teamName"
+                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/xIACM"})""",
         version               = Version.apply("21.0.0"),
         team                  = teamName
       )
@@ -254,4 +352,18 @@ class PlatformInitiativesService @Inject()(
       inProgressLegend      = inProgressLegend,
       experimental          = experimental
     )
+
+  def dependencyExplorerUrl(
+    group       : String,
+    artefact    : String,
+    flag        : String         = "latest",
+    versionRange: Option[String] = None,
+    team        : Option[String] = None,
+    repoTypes   : Seq[String]    = Seq.empty, // Note, default is Service
+    scopes      : Seq[String]    = Seq.empty, // Note, default is Compile
+  ): String = {
+    url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=$group&artefact=$artefact&versionRange=$versionRange&team=$team&flag=$flag&repoType[]=$repoTypes&scope[]=$scopes"
+      .toString
+      .replace(")", "\\)") // for markdown
+  }
 }

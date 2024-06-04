@@ -17,7 +17,8 @@
 package uk.gov.hmrc.platforminitiatives.connectors
 
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.platforminitiatives.models._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -26,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ServiceDependenciesConnector @Inject() (
-  httpClient      : HttpClient,
+  httpClientV2    : HttpClientV2,
   servicesConfig  : ServicesConfig,
 )(implicit ec: ExecutionContext)  {
 
@@ -41,13 +42,13 @@ class ServiceDependenciesConnector @Inject() (
     range       : String = "[0.0.0,)"
   )(implicit hc: HeaderCarrier): Future[Seq[MetaArtefactDependency]] = {
     val repoType = if (environment.isDefined) List("Service") else List("Service", "Library", "Test", "Other")
-    httpClient.GET[Seq[MetaArtefactDependency]](
-      url"$servicesDependenciesBaseUrl/api/repoDependencies?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=${scopes.map(_.asString)}&repoType=$repoType"
-    )
+    httpClientV2
+      .get(url"$servicesDependenciesBaseUrl/api/repoDependencies?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=${scopes.map(_.asString)}&repoType=$repoType")
+      .execute[Seq[MetaArtefactDependency]]
   }
 
   def getSlugJdkVersions(team: Option[String])(implicit hc: HeaderCarrier): Future[Seq[SlugJdkVersion]] =
-    httpClient.GET[Seq[SlugJdkVersion]](
-      url"$servicesDependenciesBaseUrl/api/jdkVersions?team=$team"
-    )
+    httpClientV2
+      .get(url"$servicesDependenciesBaseUrl/api/jdkVersions?team=$team")
+      .execute[Seq[SlugJdkVersion]]
 }

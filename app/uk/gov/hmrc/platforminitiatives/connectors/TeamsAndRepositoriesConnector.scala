@@ -19,7 +19,8 @@ package uk.gov.hmrc.platforminitiatives.connectors
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{__, Reads}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.time.Instant
@@ -27,31 +28,30 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TeamsAndRepositoriesConnector @Inject()(
-  http          : HttpClient,
+  httpClientV2  : HttpClientV2,
   servicesConfig: ServicesConfig
 )(implicit
   ec: ExecutionContext
 ) {
-
   private val teamsAndServicesBaseUrl: String =
     servicesConfig.baseUrl("teams-and-repositories")
 
   def allDefaultBranches()(implicit hc: HeaderCarrier): Future[Seq[RepositoryDisplayDetails]] = {
     implicit val rddr: Reads[RepositoryDisplayDetails] = RepositoryDisplayDetails.reads
-    http.GET[Seq[RepositoryDisplayDetails]](
-      url"$teamsAndServicesBaseUrl/api/repositories"
-    )
+    httpClientV2
+      .get(url"$teamsAndServicesBaseUrl/api/repositories")
+      .execute[Seq[RepositoryDisplayDetails]]
   }
 }
 
 case class RepositoryDisplayDetails(
-   name          : String,
-   createdAt     : Instant,
-   lastUpdatedAt : Instant,
-   isArchived    : Boolean,
-   teamNames     : Seq[String],
-   defaultBranch : String
- )
+  name          : String,
+  createdAt     : Instant,
+  lastUpdatedAt : Instant,
+  isArchived    : Boolean,
+  teamNames     : Seq[String],
+  defaultBranch : String
+)
 
 object RepositoryDisplayDetails {
   val reads: Reads[RepositoryDisplayDetails] =
