@@ -82,14 +82,6 @@ class PlatformInitiativesService @Inject()(
         environment           = None
       ),
       createUpgradeInitiative(
-        initiativeName        = "Auth-client upgrade",
-        initiativeDescription = "[CL250 Security upgrade required](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=uk.gov.hmrc&artefact=auth-client&team=$teamName&flag=production&versionRange=[0.0.0,5.6.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/x/RgpxDw" + ").",
-        group                 = "uk.gov.hmrc",
-        artefact              = "auth-client",
-        version               = Version(5,6,0,"5.6.0"),
-        team                  = teamName
-      ),
-      createUpgradeInitiative(
         initiativeName        = "Scala 2.13 Upgrade",
         initiativeDescription = "Scala 2.13 upgrade - Deprecate [Scala 2.12 and below](" + url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=org.scala-lang&artefact=scala-library&team=$teamName&flag=production&versionRange=[0.0.0,2.13.0)&asCsv=false".toString.replace(")", "\\)") + " ) | [Confluence](" + url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=275944511" + ").",
         group                 = "org.scala-lang",
