@@ -124,11 +124,17 @@ class PlatformInitiativesService @Inject()(
                                     flag     = "production",
                                     team     = teamName
                                   )
+                                }) and [repos now using Scala 3](${
+                                  dependencyExplorerUrl(
+                                    group    = "org.scala-lang",
+                                    artefact = "scala3-library",
+                                    flag     = "production",
+                                    team     = teamName
+                                  )
                                 }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449"}).""",
         fromArtefacts         = Seq(Artefact("org.scala-lang", "scala-library")),
         toArtefacts           = Seq(Artefact("org.scala-lang", "scala3-library")),
-        team                  = teamName,
-        experimental          = true
+        team                  = teamName
       ),
       createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Production",
