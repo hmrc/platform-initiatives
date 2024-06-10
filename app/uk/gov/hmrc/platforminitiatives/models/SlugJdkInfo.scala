@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{OFormat, __}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{Format, __}
 
 case class SlugJdkVersion(
   slugName: String,
@@ -27,10 +27,10 @@ case class SlugJdkVersion(
 )
 
 object SlugJdkVersion {
-  implicit val format: OFormat[SlugJdkVersion] =
+  implicit val format: Format[SlugJdkVersion] =
   ( (__ \ "name"   ).format[String]
   ~ (__ \ "version").format[Version](Version.format)
   ~ (__ \ "vendor" ).format[String]
   ~ (__ \ "kind"   ).format[String]
-  ) (SlugJdkVersion.apply, unlift(SlugJdkVersion.unapply))
+  ) (SlugJdkVersion.apply, sjv => Tuple.fromProductTyped(sjv))
 }

@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.platforminitiatives.connectors
 
-import org.mockito.MockitoSugar
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import play.api.mvc.Results
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.Results
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
 import uk.gov.hmrc.platforminitiatives.models.DependencyScope.Compile
 import uk.gov.hmrc.platforminitiatives.models.Environment.Production

@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.platforminitiatives.services
 
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -34,7 +36,6 @@ class PlatformInitiativesServiceSpec
   extends AnyWordSpec
      with Matchers
      with MockitoSugar
-     with ArgumentMatchersSugar
      with ScalaFutures
      with IntegrationPatience {
 
@@ -93,28 +94,28 @@ class PlatformInitiativesServiceSpec
     "return an initiative for a Migration and Dependency Upgrade when a targetVersion is supplied" in new Setup {
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency"),
+        artefact    = eqTo("test-dependency"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestOldDependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency-play-28"),
+        artefact    = eqTo("test-dependency-play-28"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay28Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency-play-29"),
+        artefact    = eqTo("test-dependency-play-29"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay29Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency-play-30"),
+        artefact    = eqTo("test-dependency-play-30"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
@@ -135,28 +136,28 @@ class PlatformInitiativesServiceSpec
     "return an initiative for a Migration when no targetVersion is supplied" in new Setup {
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency"),
+        artefact    = eqTo("test-dependency"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestOldDependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency-play-28"),
+        artefact    = eqTo("test-dependency-play-28"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay28Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency-play-29"),
+        artefact    = eqTo("test-dependency-play-29"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay29Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = same("test-dependency-play-30"),
+        artefact    = eqTo("test-dependency-play-30"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
