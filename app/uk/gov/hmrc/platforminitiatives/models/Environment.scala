@@ -24,11 +24,5 @@ enum Environment(val asString: String, val displayString: String):
   case ExternalTest extends Environment(asString = "externaltest", displayString = "External Test")
   case Production   extends Environment(asString = "production"  , displayString = "Production"   )
 
-  /*given ordering: Ordering[Environment] =
-    new Ordering[Environment] {
-      def compare(x: Environment, y: Environment): Int =
-        values.indexOf(x).compare(values.indexOf(y))
-    }*/
-
   def parse(s: String): Option[Environment] =
     Environment.values.find(_.asString == s)

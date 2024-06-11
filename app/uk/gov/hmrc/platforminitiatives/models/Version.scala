@@ -16,54 +16,7 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
-
-sealed trait VersionState
-object VersionState {
-  case object NewVersionAvailable extends VersionState
-  case object Invalid             extends VersionState
-}
-
-case class Dependency(
-  name          : String,
-  group         : String,
-  currentVersion: Version,
-  latestVersion : Option[Version]
-)
-
-object Dependency:
-  val reads: Reads[Dependency] =
-    given Reads[Version] = Version.format
-    ( (__ \ "name"          ).read[String]
-    ~ (__ \ "group"         ).read[String]
-    ~ (__ \ "currentVersion").read[Version]
-    ~ (__ \ "latestVersion" ).readNullable[Version]
-    )(Dependency.apply)
-
-case class Dependencies(
-  repositoryName        : String,
-  libraryDependencies   : Seq[Dependency],
-  sbtPluginsDependencies: Seq[Dependency],
-  otherDependencies     : Seq[Dependency]
-):
-  def toDependencySeq: Seq[Dependency] =
-    libraryDependencies ++ sbtPluginsDependencies ++ otherDependencies
-
-object Dependencies:
-  object Implicits:
-    given reads: Reads[Dependencies] =
-      given Reads[Dependency] = Dependency.reads
-      ( (__ \ "repositoryName"        ).read[String]
-      ~ (__ \ "libraryDependencies"   ).read[Seq[Dependency]]
-      ~ (__ \ "sbtPluginsDependencies").read[Seq[Dependency]]
-      ~ (__ \ "otherDependencies"     ).read[Seq[Dependency]]
-      )(Dependencies.apply)
-
-case class BobbyVersion(
-  version  : Version,
-  inclusive: Boolean
-)
+import play.api.libs.json.{Format, JsError, JsObject, JsString, JsSuccess, JsValue}
 
 case class Version(
   major   : Int,
@@ -98,10 +51,9 @@ object Version:
       override def reads(json: JsValue) =
         json match
           case JsString(s)  => JsSuccess(Version(s))
-          case JsObject(m)  => m.get("original") match {
+          case JsObject(m)  => m.get("original") match
                                 case Some(JsString(s)) => JsSuccess(Version(s))
                                 case _                 => JsError("Not a string")
-                              }
           case _            => JsError("Not a string")
 
       override def writes(v: Version) =
