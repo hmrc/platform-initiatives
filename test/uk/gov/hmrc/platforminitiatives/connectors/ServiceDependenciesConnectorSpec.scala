@@ -40,9 +40,9 @@ class ServiceDependenciesConnectorSpec
      with HttpClientSupport
      with WireMockSupport
      with ScalaFutures
-     with IntegrationPatience {
+     with IntegrationPatience:
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given HeaderCarrier = HeaderCarrier()
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder()
@@ -76,4 +76,3 @@ class ServiceDependenciesConnectorSpec
       jdkVersions.head.slugName mustBe "service-1"
     }
   }
-}

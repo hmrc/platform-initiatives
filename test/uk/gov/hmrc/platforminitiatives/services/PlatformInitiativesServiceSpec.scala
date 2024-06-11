@@ -37,11 +37,11 @@ class PlatformInitiativesServiceSpec
      with Matchers
      with MockitoSugar
      with ScalaFutures
-     with IntegrationPatience {
+     with IntegrationPatience:
 
   "createDefaultBranchInitiative" should {
     "return an initiative for DefaultBranches where branch name is not updated" in new Setup {
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(any[HeaderCarrier]))
+      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockRepositories))
       val result: PlatformInitiative =
         platformInitiativesService.createDefaultBranchInitiative(
@@ -61,7 +61,7 @@ class PlatformInitiativesServiceSpec
         artefact    = any[String],
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockMetaArtefactDependencies))
 
       val result: PlatformInitiative =
@@ -79,7 +79,7 @@ class PlatformInitiativesServiceSpec
 
   "createJavaInitiative" should {
     "return an initiative for Java 11 upgrade" in new Setup {
-      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: PlatformInitiative = platformInitiativesService.createJavaInitiative(
         initiativeName        = "Test",
@@ -97,28 +97,28 @@ class PlatformInitiativesServiceSpec
         artefact    = eqTo("test-dependency"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestOldDependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = eqTo("test-dependency-play-28"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay28Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = eqTo("test-dependency-play-29"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay29Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = eqTo("test-dependency-play-30"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay30Dependencies))
 
       val result: PlatformInitiative =
@@ -139,28 +139,28 @@ class PlatformInitiativesServiceSpec
         artefact    = eqTo("test-dependency"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestOldDependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = eqTo("test-dependency-play-28"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay28Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = eqTo("test-dependency-play-29"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay29Dependencies))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = eqTo("test-dependency-play-30"),
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       ).thenReturn(Future.successful(mockTestPlay30Dependencies))
 
       val result: PlatformInitiative =
@@ -180,17 +180,17 @@ class PlatformInitiativesServiceSpec
     "return all initiatives" in new Setup {
       when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
         .thenReturn(true)
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(any[HeaderCarrier]))
+      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockRepositories))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = any[String],
         environment = any[Option[Environment]],
         range       = any[String],
-        scopes      = any[List[DependencyScope]])(any[HeaderCarrier])
+        scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
       )
         .thenReturn(Future.successful(mockMetaArtefactDependencies))
-      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(any[HeaderCarrier]))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Seq[PlatformInitiative] = platformInitiativesService.allPlatformInitiatives().futureValue
       result.length shouldBe 10
@@ -198,7 +198,7 @@ class PlatformInitiativesServiceSpec
   }
 
   private[this] trait Setup {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+    given HeaderCarrier = HeaderCarrier()
     val includeExperimental = false
     val mockConfiguration                : Configuration                 = mock[Configuration]
     val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
@@ -327,4 +327,3 @@ class PlatformInitiativesServiceSpec
       )
     )
   }
-}

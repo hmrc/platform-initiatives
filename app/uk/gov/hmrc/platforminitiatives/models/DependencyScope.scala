@@ -16,31 +16,9 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
-sealed trait DependencyScope {
-  def asString: String
-}
-
-object DependencyScope {
-  case object Compile extends DependencyScope {
-    override val asString = "compile"
-  }
-
-  case object Provided extends DependencyScope {
-    override val asString = "provided"
-  }
-
-  case object Test extends DependencyScope {
-    override val asString = "test"
-  }
-
-  case object It extends DependencyScope {
-    override val asString = "it"
-  }
-
-  case object Build extends DependencyScope {
-    override val asString = "build"
-  }
-
-  val values: List[DependencyScope] =
-    List(Compile, Provided, Test, It, Build)
-}
+enum DependencyScope(val asString: String):
+  case Compile  extends DependencyScope(asString = "compile" )
+  case Provided extends DependencyScope(asString = "provided")
+  case Test     extends DependencyScope(asString = "test"    )
+  case It       extends DependencyScope(asString = "it"      )
+  case Build    extends DependencyScope(asString = "build"   )

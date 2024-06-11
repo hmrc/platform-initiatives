@@ -29,7 +29,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class ServiceDependenciesConnector @Inject() (
   httpClientV2    : HttpClientV2,
   servicesConfig  : ServicesConfig,
-)(implicit ec: ExecutionContext)  {
+)(using
+  ec              : ExecutionContext
+):
 
   private val servicesDependenciesBaseUrl: String =
     servicesConfig.baseUrl("service-dependencies")
@@ -40,15 +42,13 @@ class ServiceDependenciesConnector @Inject() (
     environment : Option[Environment],
     scopes      : List[DependencyScope],
     range       : String = "[0.0.0,)"
-  )(implicit hc: HeaderCarrier): Future[Seq[MetaArtefactDependency]] = {
+  )(using HeaderCarrier): Future[Seq[MetaArtefactDependency]] =
     val repoType = if (environment.isDefined) List("Service") else List("Service", "Library", "Test", "Other")
     httpClientV2
       .get(url"$servicesDependenciesBaseUrl/api/repoDependencies?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=${scopes.map(_.asString)}&repoType=$repoType")
       .execute[Seq[MetaArtefactDependency]]
-  }
 
-  def getSlugJdkVersions(team: Option[String])(implicit hc: HeaderCarrier): Future[Seq[SlugJdkVersion]] =
+  def getSlugJdkVersions(team: Option[String])(using HeaderCarrier): Future[Seq[SlugJdkVersion]] =
     httpClientV2
       .get(url"$servicesDependenciesBaseUrl/api/jdkVersions?team=$team")
       .execute[Seq[SlugJdkVersion]]
-}

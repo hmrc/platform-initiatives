@@ -24,12 +24,11 @@ case class Progress(
   target : Int
 )
 
-object Progress {
-  implicit val format: Format[Progress] =
+object Progress:
+  given format: Format[Progress] =
     ( (__ \ "current").format[Int]
     ~ (__ \ "target" ).format[Int]
     )(Progress.apply, p => Tuple.fromProductTyped(p))
-}
 
 
 case class PlatformInitiative(
@@ -41,11 +40,11 @@ case class PlatformInitiative(
   experimental         : Boolean
 )
 
-object PlatformInitiative {
+object PlatformInitiative:
   private def ignore[A]: OWrites[A] =
     _ => Json.obj()
 
-  implicit val writes: Writes[PlatformInitiative] =
+  given writes: Writes[PlatformInitiative] =
     ( (__ \ "initiativeName"        ).write[String]
     ~ (__ \ "initiativeDescription" ).write[String]
     ~ (__ \ "progress"              ).write[Progress]
@@ -53,4 +52,3 @@ object PlatformInitiative {
     ~ (__ \ "inProgressLegend"      ).write[String]
     ~ ignore[Boolean]
     )(pi => Tuple.fromProductTyped(pi))
-}

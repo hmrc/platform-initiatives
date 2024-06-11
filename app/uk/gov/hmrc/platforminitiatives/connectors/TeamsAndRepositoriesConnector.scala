@@ -30,19 +30,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class TeamsAndRepositoriesConnector @Inject()(
   httpClientV2  : HttpClientV2,
   servicesConfig: ServicesConfig
-)(implicit
-  ec: ExecutionContext
-) {
+)(using
+  ec            : ExecutionContext
+):
   private val teamsAndServicesBaseUrl: String =
     servicesConfig.baseUrl("teams-and-repositories")
 
-  def allDefaultBranches()(implicit hc: HeaderCarrier): Future[Seq[RepositoryDisplayDetails]] = {
-    implicit val rddr: Reads[RepositoryDisplayDetails] = RepositoryDisplayDetails.reads
+  def allDefaultBranches()(using HeaderCarrier): Future[Seq[RepositoryDisplayDetails]] =
+    given Reads[RepositoryDisplayDetails] = RepositoryDisplayDetails.reads
     httpClientV2
       .get(url"$teamsAndServicesBaseUrl/api/repositories")
       .execute[Seq[RepositoryDisplayDetails]]
-  }
-}
 
 case class RepositoryDisplayDetails(
   name          : String,
@@ -53,8 +51,8 @@ case class RepositoryDisplayDetails(
   defaultBranch : String
 )
 
-object RepositoryDisplayDetails {
-  val reads: Reads[RepositoryDisplayDetails] =
+object RepositoryDisplayDetails:
+  given reads: Reads[RepositoryDisplayDetails] =
     ( (__ \ "name"         ).read[String]
     ~ (__ \ "createdAt"    ).read[Instant]
     ~ (__ \ "lastUpdatedAt").read[Instant]
@@ -62,4 +60,3 @@ object RepositoryDisplayDetails {
     ~ (__ \ "teamNames"    ).read[Seq[String]]
     ~ (__ \ "defaultBranch").read[String]
     )(RepositoryDisplayDetails.apply _)
-}

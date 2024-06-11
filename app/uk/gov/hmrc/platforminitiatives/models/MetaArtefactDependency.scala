@@ -27,12 +27,11 @@ case class MetaArtefactDependency(
   teams      : Seq[String]
 )
 
-object MetaArtefactDependency {
-  implicit val formats: Format[MetaArtefactDependency] =
+object MetaArtefactDependency:
+  given formats: Format[MetaArtefactDependency] =
     ( (__ \ "repoName"   ).format[String]
     ~ (__ \ "depGroup"   ).format[String]
     ~ (__ \ "depArtefact").format[String]
     ~ (__ \ "depVersion" ).format[String]
     ~ (__ \ "teams"      ).format[Seq[String]]
     )(MetaArtefactDependency.apply, mad => Tuple.fromProductTyped(mad))
-}

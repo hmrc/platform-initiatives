@@ -26,11 +26,10 @@ case class SlugJdkVersion(
   kind    : String,
 )
 
-object SlugJdkVersion {
-  implicit val format: Format[SlugJdkVersion] =
+object SlugJdkVersion:
+  given format: Format[SlugJdkVersion] =
   ( (__ \ "name"   ).format[String]
   ~ (__ \ "version").format[Version](Version.format)
   ~ (__ \ "vendor" ).format[String]
   ~ (__ \ "kind"   ).format[String]
-  ) (SlugJdkVersion.apply, sjv => Tuple.fromProductTyped(sjv))
-}
+  )(SlugJdkVersion.apply, sjv => Tuple.fromProductTyped(sjv))

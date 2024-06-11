@@ -35,8 +35,9 @@ class TeamsAndRepositoriesConnectorSpec
      with MockitoSugar
      with GuiceOneAppPerSuite
      with HttpClientSupport
-     with WireMockSupport {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+     with WireMockSupport:
+
+  given HeaderCarrier = HeaderCarrier()
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder()
@@ -58,4 +59,3 @@ class TeamsAndRepositoriesConnectorSpec
       dependencies.head.name shouldBe "test"
     }
   }
-}

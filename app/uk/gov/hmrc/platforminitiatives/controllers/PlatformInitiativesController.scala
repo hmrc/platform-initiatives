@@ -28,21 +28,18 @@ import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
 class PlatformInitiativesController @Inject()(
    platformInitiativesService: PlatformInitiativesService,
    cc                        : ControllerComponents
- )(implicit
-   ec: ExecutionContext
- ) extends BackendController(cc) {
+ )(using
+   ec                        : ExecutionContext
+ ) extends BackendController(cc):
 
   val allInitiatives: Action[AnyContent] =
-    Action.async {
+    Action.async:
       platformInitiativesService.allPlatformInitiatives()
-        .map(initiative =>
-          Ok(Json.toJson(initiative)))
-    }
+        .map: initiative =>
+          Ok(Json.toJson(initiative))
 
   def teamInitiatives(team: String): Action[AnyContent] =
-    Action.async {
+    Action.async:
       platformInitiativesService.allPlatformInitiatives(Option(team))
-        .map(initiative =>
-          Ok(Json.toJson(initiative)))
-    }
-}
+        .map: initiative =>
+          Ok(Json.toJson(initiative))

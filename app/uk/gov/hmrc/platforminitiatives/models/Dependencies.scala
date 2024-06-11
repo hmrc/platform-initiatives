@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 
 sealed trait VersionState
@@ -31,25 +32,33 @@ case class Dependency(
   latestVersion : Option[Version]
 )
 
+object Dependency:
+  val reads: Reads[Dependency] =
+    given Reads[Version] = Version.format
+    ( (__ \ "name"          ).read[String]
+    ~ (__ \ "group"         ).read[String]
+    ~ (__ \ "currentVersion").read[Version]
+    ~ (__ \ "latestVersion" ).readNullable[Version]
+    )(Dependency.apply)
+
 case class Dependencies(
   repositoryName        : String,
   libraryDependencies   : Seq[Dependency],
   sbtPluginsDependencies: Seq[Dependency],
   otherDependencies     : Seq[Dependency]
-) {
+):
   def toDependencySeq: Seq[Dependency] =
     libraryDependencies ++ sbtPluginsDependencies ++ otherDependencies
-}
 
-object Dependencies {
-  object Implicits {
-    implicit val reads: Reads[Dependencies] = {
-      implicit val svf : Reads[Version]      = Version.format
-      implicit val rdr : Reads[Dependency]   = Json.reads[Dependency]
-      Json.reads[Dependencies]
-    }
-  }
-}
+object Dependencies:
+  object Implicits:
+    given reads: Reads[Dependencies] =
+      given Reads[Dependency] = Dependency.reads
+      ( (__ \ "repositoryName"        ).read[String]
+      ~ (__ \ "libraryDependencies"   ).read[Seq[Dependency]]
+      ~ (__ \ "sbtPluginsDependencies").read[Seq[Dependency]]
+      ~ (__ \ "otherDependencies"     ).read[Seq[Dependency]]
+      )(Dependencies.apply)
 
 case class BobbyVersion(
   version  : Version,
@@ -61,47 +70,39 @@ case class Version(
   minor   : Int,
   patch   : Int,
   original: String = ""
-) extends Ordered[Version] {
+) extends Ordered[Version]:
 
-  override def compare(other: Version): Int = {
+  override def compare(other: Version): Int =
     import Ordered._
     (major, minor, patch).compare((other.major, other.minor, other.patch))
-  }
-}
 
-object Version {
+object Version:
 
-  implicit val ordering: Ordering[Version] =
-    new Ordering[Version] {
+  given ordering: Ordering[Version] =
+    new Ordering[Version]:
       def compare(x: Version, y: Version): Int =
         x.compare(y)
-    }
 
-  def apply(s: String): Version = {
+  def apply(s: String): Version =
     val regex3 = """(\d+)\.(\d+)\.(\d+)(.*)""".r
     val regex2 = """(\d+)\.(\d+)(.*)""".r
     val regex1 = """(\d+)(.*)""".r
-    s match {
+    s match
       case regex3(maj, min, patch, _) => Version(Integer.parseInt(maj), Integer.parseInt(min), Integer.parseInt(patch), s)
       case regex2(maj, min, _)        => Version(Integer.parseInt(maj), Integer.parseInt(min), 0, s)
       case regex1(patch, _)           => Version(0, 0, Integer.parseInt(patch), s)
       case _                          => Version(0, 0, 0, s)
-    }
-  }
 
   val format: Format[Version] =
-    new Format[Version] {
+    new Format[Version]:
       override def reads(json: JsValue) =
-        json match {
+        json match
           case JsString(s)  => JsSuccess(Version(s))
           case JsObject(m)  => m.get("original") match {
                                 case Some(JsString(s)) => JsSuccess(Version(s))
                                 case _                 => JsError("Not a string")
                               }
           case _            => JsError("Not a string")
-        }
 
       override def writes(v: Version) =
         JsString(v.original)
-    }
-}

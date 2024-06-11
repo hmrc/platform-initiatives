@@ -33,14 +33,14 @@ class PlatformInitiativesService @Inject()(
   teamsAndRepositoriesConnector : TeamsAndRepositoriesConnector,
   serviceDependenciesConnector  : ServiceDependenciesConnector,
   cc                            : ControllerComponents
-) extends BackendController(cc) {
+) extends BackendController(cc):
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  private given HeaderCarrier = HeaderCarrier()
 
-  val displayExperimentalInitiatives: Boolean =
+  private val displayExperimentalInitiatives: Boolean =
     configuration.get[Boolean]("initiatives.service.includeExperimental")
 
-  def allPlatformInitiatives(teamName: Option[String] = None)(implicit ec: ExecutionContext): Future[Seq[PlatformInitiative]] =
+  def allPlatformInitiatives(teamName: Option[String] = None)(using ExecutionContext): Future[Seq[PlatformInitiative]] =
     List(
       createMigrationInitiative(
         initiativeName        = "Migration to new UI test tooling",
@@ -240,7 +240,7 @@ class PlatformInitiativesService @Inject()(
    ): Future[PlatformInitiative] =
     teamsAndRepositoriesConnector
       .allDefaultBranches()
-      .map { repos =>
+      .map: repos =>
         PlatformInitiative(
           initiativeName        = initiativeName,
           initiativeDescription = initiativeDescription,
@@ -261,7 +261,6 @@ class PlatformInitiativesService @Inject()(
           inProgressLegend      = inProgressLegend,
           experimental          = experimental
         )
-      }
 
   def createJavaInitiative(
      initiativeName       : String,
@@ -276,7 +275,7 @@ class PlatformInitiativesService @Inject()(
    ): Future[PlatformInitiative] =
     serviceDependenciesConnector
       .getSlugJdkVersions(team)
-      .map { repos =>
+      .map: repos =>
         PlatformInitiative(
           initiativeName            = initiativeName,
           initiativeDescription     = initiativeDescription,
@@ -288,7 +287,6 @@ class PlatformInitiativesService @Inject()(
           inProgressLegend          = inProgressLegend,
           experimental              = experimental
         )
-      }
 
   def createUpgradeInitiative(
     initiativeName       : String,
@@ -308,7 +306,7 @@ class PlatformInitiativesService @Inject()(
     serviceDependenciesConnector
       .getMetaArtefactDependency(group, artefact, environment, scopes)
       .map(sd => team.fold(sd)(t => sd.filter(_.teams == Seq(t)))) // Filtering for exclusively owned repos, if set
-      .map { dependencies =>
+      .map: dependencies =>
         PlatformInitiative(
           initiativeName          = initiativeName,
           initiativeDescription   = initiativeDescription,
@@ -320,7 +318,6 @@ class PlatformInitiativesService @Inject()(
           inProgressLegend        = inProgressLegend,
           experimental            = experimental
         )
-      }
 
   def createMigrationInitiative(
     initiativeName       : String,
@@ -337,7 +334,7 @@ class PlatformInitiativesService @Inject()(
   )(implicit
     ec                   : ExecutionContext
   ): Future[PlatformInitiative] =
-    for {
+    for
       fromDependencies     <- fromArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
@@ -346,8 +343,8 @@ class PlatformInitiativesService @Inject()(
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
                                 .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
-      allDependencies       = (fromDependencies ++ targetDependencies)
-    } yield PlatformInitiative(
+      allDependencies       = fromDependencies ++ targetDependencies
+    yield PlatformInitiative(
       initiativeName        = initiativeName,
       initiativeDescription = initiativeDescription,
       progress              = Progress(
@@ -367,9 +364,7 @@ class PlatformInitiativesService @Inject()(
     team        : Option[String] = None,
     repoTypes   : Seq[String]    = Seq.empty, // Note, default is Service
     scopes      : Seq[String]    = Seq.empty, // Note, default is Compile
-  ): String = {
+  ): String =
     url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=$group&artefact=$artefact&versionRange=$versionRange&team=$team&flag=$flag&repoType[]=$repoTypes&scope[]=$scopes"
       .toString
       .replace(")", "\\)") // for markdown
-  }
-}
