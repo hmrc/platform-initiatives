@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.platforminitiatives.connectors
 
-import org.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -35,8 +35,9 @@ class TeamsAndRepositoriesConnectorSpec
      with MockitoSugar
      with GuiceOneAppPerSuite
      with HttpClientSupport
-     with WireMockSupport {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+     with WireMockSupport:
+
+  given HeaderCarrier = HeaderCarrier()
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder()
@@ -58,4 +59,3 @@ class TeamsAndRepositoriesConnectorSpec
       dependencies.head.name shouldBe "test"
     }
   }
-}

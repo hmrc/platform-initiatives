@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{Json, OFormat, OWrites, __}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{Json, Format, OWrites, Writes, __}
 
 case class Progress(
   current: Int,
   target : Int
 )
 
-object Progress {
-  implicit val format: OFormat[Progress] =
+object Progress:
+  given format: Format[Progress] =
     ( (__ \ "current").format[Int]
     ~ (__ \ "target" ).format[Int]
-    )(Progress.apply,unlift(Progress.unapply))
-}
+    )(Progress.apply, p => Tuple.fromProductTyped(p))
 
 
 case class PlatformInitiative(
@@ -41,16 +40,15 @@ case class PlatformInitiative(
   experimental         : Boolean
 )
 
-object PlatformInitiative {
+object PlatformInitiative:
   private def ignore[A]: OWrites[A] =
-    OWrites[A](_ => Json.obj())
+    _ => Json.obj()
 
-  implicit val writes: OWrites[PlatformInitiative] =
+  given writes: Writes[PlatformInitiative] =
     ( (__ \ "initiativeName"        ).write[String]
     ~ (__ \ "initiativeDescription" ).write[String]
     ~ (__ \ "progress"              ).write[Progress]
     ~ (__ \ "completedLegend"       ).write[String]
     ~ (__ \ "inProgressLegend"      ).write[String]
     ~ ignore[Boolean]
-    )(unlift(PlatformInitiative.unapply))
-}
+    )(pi => Tuple.fromProductTyped(pi))

@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.platforminitiatives.models
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json._
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{Format, __}
 
 case class MetaArtefactDependency(
   repoName   : String,
@@ -28,12 +27,11 @@ case class MetaArtefactDependency(
   teams      : Seq[String]
 )
 
-object MetaArtefactDependency {
-  implicit val formats: OFormat[MetaArtefactDependency] =
+object MetaArtefactDependency:
+  given formats: Format[MetaArtefactDependency] =
     ( (__ \ "repoName"   ).format[String]
     ~ (__ \ "depGroup"   ).format[String]
     ~ (__ \ "depArtefact").format[String]
     ~ (__ \ "depVersion" ).format[String]
     ~ (__ \ "teams"      ).format[Seq[String]]
-    )(MetaArtefactDependency.apply, unlift(MetaArtefactDependency.unapply))
-}
+    )(MetaArtefactDependency.apply, mad => Tuple.fromProductTyped(mad))

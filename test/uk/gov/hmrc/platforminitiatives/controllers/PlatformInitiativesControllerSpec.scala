@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.platforminitiatives.controllers
 
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
@@ -35,7 +36,7 @@ class PlatformInitiativesControllerSpec
   extends AnyWordSpec
      with Matchers
      with Results
-     with MockitoSugar {
+     with MockitoSugar:
 
   "Platform Initiatives controller" should {
     "have the correct url set up for the initiatives list" in {
@@ -45,7 +46,7 @@ class PlatformInitiativesControllerSpec
   }
 
   "PlatformInitiativesController.allInitiatives" should {
-    "Return a 200 status code and correct JSON for PlatformInitiatives" in new Setup {
+    "return a 200 status code and correct JSON for PlatformInitiatives" in new Setup {
       val mockInitiatives: Seq[PlatformInitiative] = Seq(
         PlatformInitiative(
           initiativeName        = "Test initiative",
@@ -105,7 +106,7 @@ class PlatformInitiativesControllerSpec
   }
 
   "PlatformInitiativesController.teamInitiatives" should {
-    "Return a 200 status code and correct JSON for a specified teams PlatformInitiatives" in new Setup {
+    "return a 200 status code and correct JSON for a specified teams PlatformInitiatives" in new Setup {
       val mockInitiatives: Seq[PlatformInitiative] = Seq(
         PlatformInitiative(
           initiativeName        = "Test initiative",
@@ -165,7 +166,7 @@ class PlatformInitiativesControllerSpec
   }
 
   private trait Setup {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+    given HeaderCarrier = HeaderCarrier()
 
     val mockPlatformInitiativesService: PlatformInitiativesService = mock[PlatformInitiativesService]
 
@@ -174,4 +175,3 @@ class PlatformInitiativesControllerSpec
       stubControllerComponents()
     )
   }
-}
