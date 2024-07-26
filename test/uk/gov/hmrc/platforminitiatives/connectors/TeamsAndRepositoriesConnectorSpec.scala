@@ -51,7 +51,7 @@ class TeamsAndRepositoriesConnectorSpec
   "TeamsAndRepositoriesConnector.allDefaultBranches" should {
     "return correct JSON for Repository Display Details" in {
       stubFor(
-        get(urlEqualTo(s"/api/repositories"))
+        get(urlEqualTo(s"/api/v2/repositories"))
           .willReturn(aResponse().withBodyFile("teams-and-repositories/repositories.json"))
       )
 

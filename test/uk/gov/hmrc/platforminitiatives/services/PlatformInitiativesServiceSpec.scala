@@ -28,7 +28,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
 import uk.gov.hmrc.platforminitiatives.models._
 
-import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -209,32 +208,24 @@ class PlatformInitiativesServiceSpec
     val mockRepositories: Seq[RepositoryDisplayDetails] = Seq(
       RepositoryDisplayDetails(
         name          = "test",
-        createdAt     = Instant.now(),
-        lastUpdatedAt = Instant.now(),
         isArchived    = false,
         teamNames     = Seq("Team-1", "Team-2"),
         defaultBranch = "main"
       ),
       RepositoryDisplayDetails(
         name          = "test-2",
-        createdAt     = Instant.now(),
-        lastUpdatedAt = Instant.now(),
         isArchived    = false,
         teamNames     = Seq("Team-1"),
         defaultBranch = "master"
       ),
       RepositoryDisplayDetails(
         name          = "test-3",
-        createdAt     = Instant.now(),
-        lastUpdatedAt = Instant.now(),
         isArchived    = false,
         teamNames     = Seq("Team-1"),
         defaultBranch = "main"
       ),
       RepositoryDisplayDetails(
         name          = "test-4",
-        createdAt     = Instant.now(),
-        lastUpdatedAt = Instant.now(),
         isArchived    = true,
         teamNames     = Seq("Team-2"),
         defaultBranch = "master"

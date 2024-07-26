@@ -23,7 +23,6 @@ import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,13 +38,11 @@ class TeamsAndRepositoriesConnector @Inject()(
   def allDefaultBranches()(using HeaderCarrier): Future[Seq[RepositoryDisplayDetails]] =
     given Reads[RepositoryDisplayDetails] = RepositoryDisplayDetails.reads
     httpClientV2
-      .get(url"$teamsAndServicesBaseUrl/api/repositories")
+      .get(url"$teamsAndServicesBaseUrl/api/v2/repositories")
       .execute[Seq[RepositoryDisplayDetails]]
 
 case class RepositoryDisplayDetails(
   name          : String,
-  createdAt     : Instant,
-  lastUpdatedAt : Instant,
   isArchived    : Boolean,
   teamNames     : Seq[String],
   defaultBranch : String
@@ -53,10 +50,8 @@ case class RepositoryDisplayDetails(
 
 object RepositoryDisplayDetails:
   given reads: Reads[RepositoryDisplayDetails] =
-    ( (__ \ "name"         ).read[String]
-    ~ (__ \ "createdAt"    ).read[Instant]
-    ~ (__ \ "lastUpdatedAt").read[Instant]
-    ~ (__ \ "isArchived"   ).read[Boolean]
-    ~ (__ \ "teamNames"    ).read[Seq[String]]
-    ~ (__ \ "defaultBranch").read[String]
+    ( (__ \ "name"          ).read[String]
+    ~ (__ \ "isArchived"    ).read[Boolean]
+    ~ (__ \ "teamNames"     ).read[Seq[String]]
+    ~ (__ \ "defaultBranch" ).read[String]
     )(RepositoryDisplayDetails.apply _)
