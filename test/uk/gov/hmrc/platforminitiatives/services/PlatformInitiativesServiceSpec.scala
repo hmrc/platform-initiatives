@@ -25,7 +25,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.connectors.{RepositoryDisplayDetails, ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
+import uk.gov.hmrc.platforminitiatives.connectors.ServiceDependenciesConnector
 import uk.gov.hmrc.platforminitiatives.models._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,21 +37,6 @@ class PlatformInitiativesServiceSpec
      with MockitoSugar
      with ScalaFutures
      with IntegrationPatience:
-
-  "createDefaultBranchInitiative" should {
-    "return an initiative for DefaultBranches where branch name is not updated" in new Setup {
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(mockRepositories))
-      val result: PlatformInitiative =
-        platformInitiativesService.createDefaultBranchInitiative(
-          initiativeName        = "Test",
-          initiativeDescription = "Test Description",
-          completedLegend       = "Updated",
-          inProgressLegend      = "Master"
-        ).futureValue
-      result.progress shouldBe Progress(2,3)
-    }
-  }
 
   "createUpgradeInitiative" should {
     "return an initiative for a Dependency Upgrade" in new Setup {
@@ -179,8 +164,6 @@ class PlatformInitiativesServiceSpec
     "return all initiatives" in new Setup {
       when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
         .thenReturn(true)
-      when(mockTeamsAndRepositoriesConnector.allDefaultBranches()(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(mockRepositories))
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
         artefact    = any[String],
@@ -192,7 +175,7 @@ class PlatformInitiativesServiceSpec
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Seq[PlatformInitiative] = platformInitiativesService.allPlatformInitiatives().futureValue
-      result.length shouldBe 10
+      result.length shouldBe 9
     }
   }
 
@@ -200,37 +183,9 @@ class PlatformInitiativesServiceSpec
     given HeaderCarrier = HeaderCarrier()
     val includeExperimental = false
     val mockConfiguration                : Configuration                 = mock[Configuration]
-    val mockTeamsAndRepositoriesConnector: TeamsAndRepositoriesConnector = mock[TeamsAndRepositoriesConnector]
     val mockServiceDependenciesConnector : ServiceDependenciesConnector  = mock[ServiceDependenciesConnector]
     val mockControllerComponents         : ControllerComponents          = mock[ControllerComponents]
-    lazy val platformInitiativesService  : PlatformInitiativesService    = new PlatformInitiativesService(mockConfiguration, mockTeamsAndRepositoriesConnector, mockServiceDependenciesConnector, mockControllerComponents)
-
-    val mockRepositories: Seq[RepositoryDisplayDetails] = Seq(
-      RepositoryDisplayDetails(
-        name          = "test",
-        isArchived    = false,
-        teamNames     = Seq("Team-1", "Team-2"),
-        defaultBranch = "main"
-      ),
-      RepositoryDisplayDetails(
-        name          = "test-2",
-        isArchived    = false,
-        teamNames     = Seq("Team-1"),
-        defaultBranch = "master"
-      ),
-      RepositoryDisplayDetails(
-        name          = "test-3",
-        isArchived    = false,
-        teamNames     = Seq("Team-1"),
-        defaultBranch = "main"
-      ),
-      RepositoryDisplayDetails(
-        name          = "test-4",
-        isArchived    = true,
-        teamNames     = Seq("Team-2"),
-        defaultBranch = "master"
-      )
-    )
+    lazy val platformInitiativesService  : PlatformInitiativesService    = new PlatformInitiativesService(mockConfiguration, mockServiceDependenciesConnector, mockControllerComponents)
 
     val mockMetaArtefactDependencies = Seq(
       MetaArtefactDependency(
