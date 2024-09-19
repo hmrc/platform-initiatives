@@ -20,7 +20,7 @@ import cats.implicits._
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.platforminitiatives.connectors.{ServiceDependenciesConnector, TeamsAndRepositoriesConnector}
+import uk.gov.hmrc.platforminitiatives.connectors.ServiceDependenciesConnector
 import uk.gov.hmrc.platforminitiatives.models.DependencyScope.{Compile, Test}
 import uk.gov.hmrc.platforminitiatives.models._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,7 +30,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PlatformInitiativesService @Inject()(
   configuration                 : Configuration,
-  teamsAndRepositoriesConnector : TeamsAndRepositoriesConnector,
   serviceDependenciesConnector  : ServiceDependenciesConnector,
   cc                            : ControllerComponents
 ) extends BackendController(cc):
@@ -105,15 +104,6 @@ class PlatformInitiativesService @Inject()(
         toArtefacts           = Seq(Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-28"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-29"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-30")),
         targetVersion         = Some(Version("8.5.0")),
         team                  = teamName
-      ),
-      createDefaultBranchInitiative(
-        initiativeName        = "Update Default Branch Terminology",
-        team                  = teamName,
-        initiativeDescription = s"""To update default branch names - [Default Branch Tracker](${
-                                  url"https://catalogue.tax.service.gov.uk/defaultbranch?name=&teamNames=$teamName&defaultBranch=master"
-                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/10/08/Default Branch Migration: How To"}).""",
-        completedLegend       = "Updated",
-        inProgressLegend      = "Master"
       ),
       createMigrationInitiative(
         initiativeName        = "Scala 3 Upgrade",
@@ -227,40 +217,6 @@ class PlatformInitiativesService @Inject()(
        _.filter(_.progress.target != 0)
         .filter(!_.experimental || displayExperimentalInitiatives)
      )
-
-  def createDefaultBranchInitiative(
-     initiativeName       : String,
-     initiativeDescription: String,
-     team                 : Option[String] = None,
-     completedLegend      : String         = "Completed",
-     inProgressLegend     : String         = "Not Completed",
-     experimental         : Boolean        = false
-   )(implicit
-     ec                   : ExecutionContext
-   ): Future[PlatformInitiative] =
-    teamsAndRepositoriesConnector
-      .allDefaultBranches()
-      .map: repos =>
-        PlatformInitiative(
-          initiativeName        = initiativeName,
-          initiativeDescription = initiativeDescription,
-          progress              = Progress(
-                                    current = repos
-                                                // Filtering for exclusively owned repos
-                                                .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-                                                .filter(!_.isArchived)
-                                                .map(_.defaultBranch)
-                                                .count(_ != "master"),
-                                    target = repos
-                                                .filter(repositories => team.fold(true)(repositories.teamNames == Seq(_)))
-                                                .filter(!_.isArchived)
-                                                .map(_.defaultBranch)
-                                                .length
-                                  ),
-          completedLegend       = completedLegend,
-          inProgressLegend      = inProgressLegend,
-          experimental          = experimental
-        )
 
   def createJavaInitiative(
      initiativeName       : String,
