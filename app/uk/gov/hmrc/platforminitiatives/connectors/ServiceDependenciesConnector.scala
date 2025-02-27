@@ -48,7 +48,7 @@ class ServiceDependenciesConnector @Inject() (
       .get(url"$servicesDependenciesBaseUrl/api/repoDependencies?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=${scopes.map(_.asString)}&repoType=$repoType")
       .execute[Seq[MetaArtefactDependency]]
 
-  def getSlugJdkVersions(team: Option[String])(using HeaderCarrier): Future[Seq[SlugJdkVersion]] =
+  def getSlugJdkVersions(team: Option[String], digitalService: Option[String])(using HeaderCarrier): Future[Seq[SlugJdkVersion]] =
     httpClientV2
-      .get(url"$servicesDependenciesBaseUrl/api/jdkVersions?team=$team")
+      .get(url"$servicesDependenciesBaseUrl/api/jdkVersions?team=$team&digitalService=$digitalService")
       .execute[Seq[SlugJdkVersion]]

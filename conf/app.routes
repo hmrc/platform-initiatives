@@ -1,4 +1,3 @@
 # microservice specific routes
 
-GET         /initiatives                               uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.allInitiatives
-GET         /teams/:team/initiatives                   uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.teamInitiatives(team)
+GET         /initiatives                               uk.gov.hmrc.platforminitiatives.controllers.PlatformInitiativesController.initiatives(team: Option[String], digitalService: Option[String])

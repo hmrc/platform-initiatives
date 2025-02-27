@@ -54,7 +54,9 @@ class PlatformInitiativesServiceSpec
           initiativeDescription = "Test Description",
           group                 = "uk.gov.hmrc",
           artefact              = "Dep1",
-          version               = Version(0, 2, 0)
+          version               = Version(0, 2, 0),
+          team                  = None,
+          digitalService        = None
         ).futureValue
       result.initiativeName shouldBe "Test"
       result.progress       shouldBe Progress(2,3)
@@ -63,12 +65,14 @@ class PlatformInitiativesServiceSpec
 
   "createJavaInitiative" should {
     "return an initiative for Java 11 upgrade" in new Setup {
-      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(using any[HeaderCarrier]))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any, digitalService = any)(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: PlatformInitiative = platformInitiativesService.createJavaInitiative(
         initiativeName        = "Test",
         initiativeDescription = s"Test Description",
         version               = Version.apply("11.0.0"),
+        team                  = None,
+        digitalService        = None
       ).futureValue
       result.progress shouldBe Progress(1,2)
     }
@@ -160,7 +164,7 @@ class PlatformInitiativesServiceSpec
     }
   }
 
-  "allPlatformInitiatives" should {
+  "platformInitiatives" should {
     "return all initiatives" in new Setup {
       when(mockConfiguration.get[Boolean]("initiatives.service.includeExperimental"))
         .thenReturn(true)
@@ -170,11 +174,10 @@ class PlatformInitiativesServiceSpec
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[List[DependencyScope]])(using any[HeaderCarrier])
-      )
-        .thenReturn(Future.successful(mockMetaArtefactDependencies))
-      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any)(using any[HeaderCarrier]))
+      ).thenReturn(Future.successful(mockMetaArtefactDependencies))
+      when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any, digitalService = any)(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
-      val result: Seq[PlatformInitiative] = platformInitiativesService.allPlatformInitiatives().futureValue
+      val result: Seq[PlatformInitiative] = platformInitiativesService.platformInitiatives(teamName = None, digitalService = None).futureValue
       result.length shouldBe 9
     }
   }
@@ -189,72 +192,80 @@ class PlatformInitiativesServiceSpec
 
     val mockMetaArtefactDependencies = Seq(
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup    = "uk.gov.hmrc",
-        depArtefact = "test-dependency",
-        depVersion  = "1.0.0",
-        teams       = Seq("team-2")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency",
+        depVersion     = "1.0.0",
+        teams          = Seq("team-2"),
+        digitalService = None
       ),
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup    = "uk.gov.hmrc",
-        depArtefact = "test-dependency",
-        depVersion  = "1.5.0",
-        teams       = Seq("team-1")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency",
+        depVersion     = "1.5.0",
+        teams          = Seq("team-1"),
+        digitalService = None
       ),
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup   = "uk.gov.hmrc",
-        depArtefact = "test-dependency",
-        depVersion  = "0.1.0",
-        teams       = Seq("team-3")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency",
+        depVersion     = "0.1.0",
+        teams          = Seq("team-3"),
+        digitalService = None
       )
     )
 
     val mockTestOldDependencies = Seq(
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup    = "uk.gov.hmrc",
-        depArtefact = "test-dependency",
-        depVersion  = "1.0.0",
-        teams       = Seq("team-2")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency",
+        depVersion     = "1.0.0",
+        teams          = Seq("team-2"),
+        digitalService = None
       )
     )
 
     val mockTestPlay28Dependencies = Seq(
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup    = "uk.gov.hmrc",
-        depArtefact = "test-dependency-play-28",
-        depVersion  = "0.1.0",
-        teams       = Seq("team-1")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency-play-28",
+        depVersion     = "0.1.0",
+        teams          = Seq("team-1"),
+        digitalService = None
       ),
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup    = "uk.gov.hmrc",
-        depArtefact = "test-dependency-play-28",
-        depVersion  = "1.8.0",
-        teams       = Seq("team-3")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency-play-28",
+        depVersion     = "1.8.0",
+        teams          = Seq("team-3"),
+        digitalService = None
       )
     )
 
     val mockTestPlay29Dependencies = Seq(
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup    = "uk.gov.hmrc",
-        depArtefact = "test-dependency-play-29",
-        depVersion  = "1.9.0",
-        teams       = Seq("team-4")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency-play-29",
+        depVersion     = "1.9.0",
+        teams          = Seq("team-4"),
+        digitalService = None
       )
     )
 
     val mockTestPlay30Dependencies = Seq(
       MetaArtefactDependency(
-        repoName    = "hmrc-test",
-        depGroup    = "uk.gov.hmrc",
-        depArtefact = "test-dependency-play-30",
-        depVersion  = "1.2.0",
-        teams       = Seq("team-5")
+        repoName       = "hmrc-test",
+        depGroup       = "uk.gov.hmrc",
+        depArtefact    = "test-dependency-play-30",
+        depVersion     = "1.2.0",
+        teams          = Seq("team-5"),
+        digitalService = None
       )
     )
 
