@@ -40,7 +40,7 @@ class PlatformInitiativesControllerSpec
 
   "Platform Initiatives controller" should {
     "have the correct url set up for the initiatives list" in {
-      uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.allInitiatives
+      uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.initiatives(None, None)
         .url shouldBe "/platform-initiatives/initiatives"
     }
   }
@@ -72,10 +72,10 @@ class PlatformInitiativesControllerSpec
         )
       )
 
-      when(mockPlatformInitiativesService.allPlatformInitiatives())
+      when(mockPlatformInitiativesService.platformInitiatives(None, None))
         .thenReturn(Future.successful(mockInitiatives))
 
-      val result: Future[Result] = controller.allInitiatives.apply(FakeRequest())
+      val result: Future[Result] = controller.initiatives(None, None).apply(FakeRequest())
 
       status(result)        shouldBe 200
       contentAsJson(result) shouldBe Json.parse(
@@ -132,10 +132,10 @@ class PlatformInitiativesControllerSpec
         )
       )
 
-      when(mockPlatformInitiativesService.allPlatformInitiatives(Option("team-1")))
+      when(mockPlatformInitiativesService.platformInitiatives(Some("team-1"), None))
         .thenReturn(Future.successful(mockInitiatives))
 
-      val result: Future[Result] = controller.teamInitiatives("team-1").apply(FakeRequest())
+      val result: Future[Result] = controller.initiatives(Some("team-1"), None).apply(FakeRequest())
 
       status(result)        shouldBe 200
       contentAsJson(result) shouldBe Json.parse(

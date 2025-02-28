@@ -20,18 +20,20 @@ import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{Format, __}
 
 case class MetaArtefactDependency(
-  repoName   : String,
-  depGroup   : String,
-  depArtefact: String,
-  depVersion : String,
-  teams      : Seq[String]
+  repoName      : String,
+  depGroup      : String,
+  depArtefact   : String,
+  depVersion    : String,
+  teams         : Seq[String],
+  digitalService: Option[String]
 )
 
 object MetaArtefactDependency:
   given formats: Format[MetaArtefactDependency] =
-    ( (__ \ "repoName"   ).format[String]
-    ~ (__ \ "depGroup"   ).format[String]
-    ~ (__ \ "depArtefact").format[String]
-    ~ (__ \ "depVersion" ).format[String]
-    ~ (__ \ "teams"      ).format[Seq[String]]
+    ( (__ \ "repoName"      ).format[String]
+    ~ (__ \ "depGroup"      ).format[String]
+    ~ (__ \ "depArtefact"   ).format[String]
+    ~ (__ \ "depVersion"    ).format[String]
+    ~ (__ \ "teams"         ).format[Seq[String]]
+    ~ (__ \ "digitalService").formatNullable[String]
     )(MetaArtefactDependency.apply, mad => Tuple.fromProductTyped(mad))

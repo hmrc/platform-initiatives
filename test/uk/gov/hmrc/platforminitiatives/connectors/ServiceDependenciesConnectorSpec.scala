@@ -61,7 +61,7 @@ class ServiceDependenciesConnectorSpec
       )
 
       val dependencies = connector.getMetaArtefactDependency("uk.gov.hmrc", "test-dependency", Some(Production), List(Compile)).futureValue
-      dependencies.head mustBe MetaArtefactDependency("hmrc-test", "uk.gov.hmrc", "test-dependency", "1.0.0", Seq("team1"))
+      dependencies.head mustBe MetaArtefactDependency("hmrc-test", "uk.gov.hmrc", "test-dependency", "1.0.0", Seq("team1"), digitalService = None)
     }
   }
 
@@ -72,7 +72,7 @@ class ServiceDependenciesConnectorSpec
           .willReturn(aResponse().withBodyFile("service-dependencies/jdk-versions.json"))
       )
 
-      val jdkVersions = connector.getSlugJdkVersions(team = None).futureValue
+      val jdkVersions = connector.getSlugJdkVersions(team = None, digitalService = None).futureValue
       jdkVersions.head.slugName mustBe "service-1"
     }
   }

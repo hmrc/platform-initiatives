@@ -39,7 +39,7 @@ class PlatformInitiativesService @Inject()(
   private val displayExperimentalInitiatives: Boolean =
     configuration.get[Boolean]("initiatives.service.includeExperimental")
 
-  def allPlatformInitiatives(teamName: Option[String] = None)(using ExecutionContext): Future[Seq[PlatformInitiative]] =
+  def platformInitiatives(teamName: Option[String], digitalService: Option[String])(using ExecutionContext): Future[Seq[PlatformInitiative]] =
     List(
       createMigrationInitiative(
         initiativeName        = "Migration to new UI test tooling",
@@ -63,6 +63,7 @@ class PlatformInitiativesService @Inject()(
         fromArtefacts         = Seq(Artefact("uk.gov.hmrc","webdriver-factory")),
         toArtefacts           = Seq(Artefact("uk.gov.hmrc", "ui-test-runner")),
         team                  = teamName,
+        digitalService        = digitalService,
         environment           = None,
         scopes                = List(Test)
       ),
@@ -103,7 +104,8 @@ class PlatformInitiativesService @Inject()(
         fromArtefacts         = Seq(Artefact("uk.gov.hmrc","play-frontend-hmrc")),
         toArtefacts           = Seq(Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-28"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-29"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-30")),
         targetVersion         = Some(Version("8.5.0")),
-        team                  = teamName
+        team                  = teamName,
+        digitalService        = digitalService
       ),
       createMigrationInitiative(
         initiativeName        = "Scala 3 Upgrade",
@@ -124,7 +126,8 @@ class PlatformInitiativesService @Inject()(
                                 }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449"}).""",
         fromArtefacts         = Seq(Artefact("org.scala-lang", "scala-library")),
         toArtefacts           = Seq(Artefact("org.scala-lang", "scala3-library")),
-        team                  = teamName
+        team                  = teamName,
+        digitalService        = digitalService
       ),
       createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Production",
@@ -139,7 +142,8 @@ class PlatformInitiativesService @Inject()(
                                 }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=774373449"}).""",
         fromArtefacts         = Seq(Artefact("com.typesafe.play", "play")),
         toArtefacts           = Seq(Artefact("org.playframework", "play")),
-        team                  = teamName
+        team                  = teamName,
+        digitalService        = digitalService
       ),
       createMigrationInitiative(
         initiativeName        = "Play 3.0 upgrade - Latest",
@@ -155,6 +159,7 @@ class PlatformInitiativesService @Inject()(
         fromArtefacts         = Seq(Artefact("com.typesafe.play", "play")),
         toArtefacts           = Seq(Artefact("org.playframework", "play")),
         team                  = teamName,
+        digitalService        = digitalService,
         environment           = None
       ),
       createUpgradeInitiative(
@@ -172,6 +177,7 @@ class PlatformInitiativesService @Inject()(
         artefact              = "scala-library",
         version               = Version("2.13.0"),
         team                  = teamName,
+        digitalService        = digitalService
       ),
       createMigrationInitiative(
         initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
@@ -193,6 +199,7 @@ class PlatformInitiativesService @Inject()(
         fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "simple-reactivemongo")),
         toArtefacts           = Seq(Artefact("uk.gov.hmrc.mongo", "hmrc-mongo-common")),
         team                  = teamName,
+        digitalService        = digitalService,
         inProgressLegend      = "Simple-Reactivemongo",
         completedLegend       = "HMRC-Mongo"
       ),
@@ -202,7 +209,8 @@ class PlatformInitiativesService @Inject()(
                                   url"https://catalogue.tax.service.gov.uk/jdkexplorer/environment?env=latest&teamName=$teamName"
                                 }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/TwLIH"})""",
         version               = Version("11.0.0"),
-        team                  = teamName
+        team                  = teamName,
+        digitalService        = digitalService
       ),
       createJavaInitiative(
         initiativeName        = "Java 21 Upgrade",
@@ -210,7 +218,8 @@ class PlatformInitiativesService @Inject()(
                                   url"https://catalogue.tax.service.gov.uk/jdkexplorer/environment?env=latest&teamName=$teamName"
                                 }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/xIACM"})""",
         version               = Version.apply("21.0.0"),
-        team                  = teamName
+        team                  = teamName,
+        digitalService        = digitalService
       )
     ).sequence
      .map(
@@ -222,7 +231,8 @@ class PlatformInitiativesService @Inject()(
      initiativeName       : String,
      initiativeDescription: String,
      version              : Version,
-     team                 : Option[String] = None,
+     team                 : Option[String],
+     digitalService       : Option[String],
      completedLegend      : String         = "Completed",
      inProgressLegend     : String         = "Not Completed",
      experimental         : Boolean        = false
@@ -230,7 +240,7 @@ class PlatformInitiativesService @Inject()(
      ec: ExecutionContext
    ): Future[PlatformInitiative] =
     serviceDependenciesConnector
-      .getSlugJdkVersions(team)
+      .getSlugJdkVersions(team, digitalService)
       .map: repos =>
         PlatformInitiative(
           initiativeName            = initiativeName,
@@ -251,6 +261,7 @@ class PlatformInitiativesService @Inject()(
     artefact             : String,
     version              : Version,
     team                 : Option[String]        = None,
+    digitalService       : Option[String]        = None,
     environment          : Option[Environment]   = Some(Environment.Production),
     scopes               : List[DependencyScope] = List(Compile),
     completedLegend      : String                = "Completed",
@@ -282,6 +293,7 @@ class PlatformInitiativesService @Inject()(
     toArtefacts          : Seq[Artefact],
     targetVersion        : Option[Version]       = None,
     team                 : Option[String]        = None,
+    digitalService       : Option[String]        = None,
     environment          : Option[Environment]   = Some(Environment.Production),
     scopes               : List[DependencyScope] = List(Compile),
     completedLegend      : String                = "Completed",
@@ -295,10 +307,12 @@ class PlatformInitiativesService @Inject()(
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
                                 .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
+                                .map(_.filter(dependencies => digitalService.fold(true)(x => dependencies.digitalService.exists(_ == x))))
       targetDependencies   <- toArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
                                 .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
+                                .map(_.filter(dependencies => digitalService.fold(true)(x => dependencies.digitalService.exists(_ == x))))
       allDependencies       = fromDependencies ++ targetDependencies
     yield PlatformInitiative(
       initiativeName        = initiativeName,

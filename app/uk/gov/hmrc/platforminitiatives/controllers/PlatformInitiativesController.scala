@@ -32,14 +32,9 @@ class PlatformInitiativesController @Inject()(
    ec                        : ExecutionContext
  ) extends BackendController(cc):
 
-  val allInitiatives: Action[AnyContent] =
+  def initiatives(team: Option[String], digitalService: Option[String]): Action[AnyContent] =
     Action.async:
-      platformInitiativesService.allPlatformInitiatives()
-        .map: initiative =>
-          Ok(Json.toJson(initiative))
-
-  def teamInitiatives(team: String): Action[AnyContent] =
-    Action.async:
-      platformInitiativesService.allPlatformInitiatives(Option(team))
+      platformInitiativesService
+        .platformInitiatives(team, digitalService)
         .map: initiative =>
           Ok(Json.toJson(initiative))
