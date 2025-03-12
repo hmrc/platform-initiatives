@@ -179,30 +179,6 @@ class PlatformInitiativesService @Inject()(
         team                  = teamName,
         digitalService        = digitalService
       ),
-      createMigrationInitiative(
-        initiativeName        = "Replace simple-reactivemongo with hmrc-mongo",
-        initiativeDescription = s"""Monitoring [repos still using simple-reactivemongo](${
-                                  dependencyExplorerUrl(
-                                    group    = "uk.gov.hmrc",
-                                    artefact = "simple-reactivemongo",
-                                    flag     = "production",
-                                    team     = teamName
-                                  )
-                                }) and [repos now using hmrc-mongo](${
-                                  dependencyExplorerUrl(
-                                    group    = "uk.gov.hmrc.mongo",
-                                    artefact = "hmrc-mongo-common",
-                                    flag     = "production",
-                                    team     = teamName
-                                  )
-                                }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/display/TEC/2021/03/04/HMRC+Mongo+is+now+available"}).""",
-        fromArtefacts         = Seq(Artefact("uk.gov.hmrc", "simple-reactivemongo")),
-        toArtefacts           = Seq(Artefact("uk.gov.hmrc.mongo", "hmrc-mongo-common")),
-        team                  = teamName,
-        digitalService        = digitalService,
-        inProgressLegend      = "Simple-Reactivemongo",
-        completedLegend       = "HMRC-Mongo"
-      ),
       createJavaInitiative(
         initiativeName        = "Java 11 Upgrade",
         initiativeDescription = s"""[Java 11 upgrade](${
