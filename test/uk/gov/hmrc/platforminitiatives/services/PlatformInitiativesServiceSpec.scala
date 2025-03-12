@@ -178,7 +178,7 @@ class PlatformInitiativesServiceSpec
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any, digitalService = any)(using any[HeaderCarrier]))
         .thenReturn(Future.successful(mockSlugJdkVersions))
       val result: Seq[PlatformInitiative] = platformInitiativesService.platformInitiatives(teamName = None, digitalService = None).futureValue
-      result.length shouldBe 9
+      result.length shouldBe 8
     }
   }
 
