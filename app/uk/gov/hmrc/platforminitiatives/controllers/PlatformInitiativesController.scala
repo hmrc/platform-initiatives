@@ -32,9 +32,9 @@ class PlatformInitiativesController @Inject()(
    ec                        : ExecutionContext
  ) extends BackendController(cc):
 
-  def initiatives(team: Option[String], digitalService: Option[String]): Action[AnyContent] =
+  def initiatives(teamName: Option[String], digitalService: Option[String]): Action[AnyContent] =
     Action.async:
       platformInitiativesService
-        .platformInitiatives(team, digitalService)
+        .platformInitiatives(teamName, digitalService)
         .map: initiative =>
           Ok(Json.toJson(initiative))
