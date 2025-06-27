@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.models
+package uk.gov.hmrc.platforminitiatives.model
 
-case class Artefact(
-  group   : String,
-  name    : String
-)
-
+enum DependencyScope(val asString: String):
+  case Compile  extends DependencyScope(asString = "compile" )
+  case Provided extends DependencyScope(asString = "provided")
+  case Test     extends DependencyScope(asString = "test"    )
+  case It       extends DependencyScope(asString = "it"      )
+  case Build    extends DependencyScope(asString = "build"   )

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.connectors
+package uk.gov.hmrc.platforminitiatives.connector
 
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.platforminitiatives.models._
+import uk.gov.hmrc.platforminitiatives.model.*
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
@@ -40,10 +40,10 @@ class ServiceDependenciesConnector @Inject() (
     group       : String,
     artefact    : String,
     environment : Option[Environment],
-    scopes      : List[DependencyScope],
+    scopes      : Seq[DependencyScope],
     range       : String = "[0.0.0,)"
   )(using HeaderCarrier): Future[Seq[MetaArtefactDependency]] =
-    val repoType = if (environment.isDefined) List("Service") else List("Service", "Library", "Test", "Other")
+    val repoType = if (environment.isDefined) Seq("Service") else Seq("Service", "Library", "Test", "Other")
     httpClientV2
       .get(url"$servicesDependenciesBaseUrl/api/repoDependencies?group=$group&artefact=$artefact&versionRange=$range&flag=$environment&scope=${scopes.map(_.asString)}&repoType=$repoType")
       .execute[Seq[MetaArtefactDependency]]
