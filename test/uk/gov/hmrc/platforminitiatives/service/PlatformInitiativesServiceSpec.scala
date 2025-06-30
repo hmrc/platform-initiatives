@@ -208,7 +208,7 @@ class PlatformInitiativesServiceSpec
           team           = None,
           digitalService = None
         ).futureValue
-      result.initiativeName shouldBe "GOV•UK brand refresh"
+      result.initiativeName shouldBe "GOV•UK Brand Refresh"
       result.progress       shouldBe Progress(current = 1, target = 3)
 
 
