@@ -133,7 +133,7 @@ class PlatformInitiativesService @Inject()(
         digitalService        = digitalService
       ),
       createMigrationInitiative(
-        initiativeName        = "Play 3.0 upgrade - Production",
+        initiativeName        = "Play 3.0 Upgrade - Production",
         initiativeDescription = s"""Play 3.0 upgrade - Deprecate [Play 2.9 and below](${
                                   dependencyExplorerUrl(
                                     group        = "com.typesafe.play",
@@ -149,7 +149,7 @@ class PlatformInitiativesService @Inject()(
         digitalService        = digitalService
       ),
       createMigrationInitiative(
-        initiativeName        = "Play 3.0 upgrade - Latest",
+        initiativeName        = "Play 3.0 Upgrade - Latest",
         initiativeDescription = s"""Play 3.0 upgrade - Deprecate [Play 2.9 and below](${
                                   dependencyExplorerUrl(
                                     group        = "com.typesafe.play",
@@ -234,7 +234,7 @@ class PlatformInitiativesService @Inject()(
     ).mapN: (dependencies, withConfig) =>
       val repoLinks =
         Seq(
-          "play-frontend-hmrc-play-28" -> "play-frontend-hmrc-play-28",
+          "play-frontend-hmrc-play-28" -> "28",
           "play-frontend-hmrc-play-29" -> "29",
           "play-frontend-hmrc-play-30" -> "30"
         )
@@ -259,8 +259,8 @@ class PlatformInitiativesService @Inject()(
               team         = team
             )})")
       PlatformInitiative(
-        initiativeName          = "GOV•UK brand refresh",
-        initiativeDescription   = s"""Repos using ${repoLinks.mkString(" | ")} require version 12.3.0+ ${upgradedLinks.mkString(" | ")} and enabling Config [play-frontend-hmrc.useRebrand](${
+        initiativeName          = "GOV•UK Brand Refresh",
+        initiativeDescription   = s"""Repos using `play-frontend-hmrc` ${repoLinks.mkString("(", " | ", ")")} require version 12.3.0+ ${upgradedLinks.mkString("(", " | ", ")")} and enabling with [config](${
                                     searchConfigUrl(
                                       key         = "play-frontend-hmrc.useRebrand",
                                       value       = "true",
@@ -325,7 +325,8 @@ class PlatformInitiativesService @Inject()(
   ): Future[PlatformInitiative] =
     serviceDependenciesConnector
       .getMetaArtefactDependency(group, artefact, environment, scopes)
-      .map(sd => team.fold(sd)(t => sd.filter(_.teams == Seq(t)))) // Filtering for exclusively owned repos, if set
+      .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_))))  // Filtering for exclusively owned repos, if set
+      .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
       .map: dependencies =>
         PlatformInitiative(
           initiativeName          = initiativeName,
