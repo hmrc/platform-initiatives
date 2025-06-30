@@ -247,7 +247,6 @@ class PlatformInitiativesService @Inject()(
             )})")
       val upgradedLinks =
         Seq(
-          "play-frontend-hmrc-play-28" -> "28",
           "play-frontend-hmrc-play-29" -> "29",
           "play-frontend-hmrc-play-30" -> "30"
         )
