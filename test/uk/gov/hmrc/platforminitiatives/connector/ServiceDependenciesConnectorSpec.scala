@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.connectors
+package uk.gov.hmrc.platforminitiatives.connector
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -27,9 +27,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Results
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.{HttpClientSupport, WireMockSupport}
-import uk.gov.hmrc.platforminitiatives.models.DependencyScope.Compile
-import uk.gov.hmrc.platforminitiatives.models.Environment.Production
-import uk.gov.hmrc.platforminitiatives.models.MetaArtefactDependency
+import uk.gov.hmrc.platforminitiatives.model.{DependencyScope, Environment, MetaArtefactDependency}
 
 class ServiceDependenciesConnectorSpec
   extends AnyWordSpec
@@ -60,7 +58,7 @@ class ServiceDependenciesConnectorSpec
           .willReturn(aResponse().withBodyFile("service-dependencies/metaArtefactDependency.json"))
       )
 
-      val dependencies = connector.getMetaArtefactDependency("uk.gov.hmrc", "test-dependency", Some(Production), List(Compile)).futureValue
+      val dependencies = connector.getMetaArtefactDependency("uk.gov.hmrc", "test-dependency", Some(Environment.Production), Seq(DependencyScope.Compile)).futureValue
       dependencies.head mustBe MetaArtefactDependency("hmrc-test", "uk.gov.hmrc", "test-dependency", "1.0.0", Seq("team1"), digitalService = None)
     }
   }

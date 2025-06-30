@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.models
+package uk.gov.hmrc.platforminitiatives.model
 
 import play.api.libs.json.{Format, JsError, JsObject, JsString, JsSuccess, JsValue}
 

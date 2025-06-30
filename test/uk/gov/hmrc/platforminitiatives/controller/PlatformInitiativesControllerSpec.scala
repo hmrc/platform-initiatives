@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.controllers
+package uk.gov.hmrc.platforminitiatives.controller
 
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -25,8 +25,8 @@ import play.api.mvc.{Result, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.models.{PlatformInitiative, Progress}
-import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
+import uk.gov.hmrc.platforminitiatives.model.{PlatformInitiative, Progress}
+import uk.gov.hmrc.platforminitiatives.service.PlatformInitiativesService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -40,7 +40,7 @@ class PlatformInitiativesControllerSpec
 
   "Platform Initiatives controller" should {
     "have the correct url set up for the initiatives list" in {
-      uk.gov.hmrc.platforminitiatives.controllers.routes.PlatformInitiativesController.initiatives(None, None)
+      uk.gov.hmrc.platforminitiatives.controller.routes.PlatformInitiativesController.initiatives(None, None)
         .url shouldBe "/platform-initiatives/initiatives"
     }
   }

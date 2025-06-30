@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.models
+package uk.gov.hmrc.platforminitiatives.model
 
 enum Environment(val asString: String, val displayString: String):
   case Development  extends Environment(asString = "development" , displayString = "Development"  )

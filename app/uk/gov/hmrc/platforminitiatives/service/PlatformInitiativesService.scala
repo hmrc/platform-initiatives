@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.services
+package uk.gov.hmrc.platforminitiatives.service
 
-import cats.implicits._
+import cats.implicits.*
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.platforminitiatives.connectors.ServiceDependenciesConnector
-import uk.gov.hmrc.platforminitiatives.models.DependencyScope.{Compile, Test}
-import uk.gov.hmrc.platforminitiatives.models._
+import uk.gov.hmrc.platforminitiatives.connector.{ServiceConfigsConnector, ServiceDependenciesConnector}
+import uk.gov.hmrc.platforminitiatives.model.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
@@ -30,6 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PlatformInitiativesService @Inject()(
   configuration                 : Configuration,
+  serviceConfigsConnector       : ServiceConfigsConnector,
   serviceDependenciesConnector  : ServiceDependenciesConnector,
   cc                            : ControllerComponents
 ) extends BackendController(cc):
@@ -39,8 +39,11 @@ class PlatformInitiativesService @Inject()(
   private val displayExperimentalInitiatives: Boolean =
     configuration.get[Boolean]("initiatives.service.includeExperimental")
 
-  def platformInitiatives(teamName: Option[String], digitalService: Option[String])(using ExecutionContext): Future[Seq[PlatformInitiative]] =
-    List(
+  def platformInitiatives(
+    teamName      : Option[String],
+    digitalService: Option[String]
+  )(using ExecutionContext): Future[Seq[PlatformInitiative]] =
+    Seq(
       createMigrationInitiative(
         initiativeName        = "Migration to new UI test tooling",
         initiativeDescription = s"""Migration from [webdriver-factory](${
@@ -65,7 +68,7 @@ class PlatformInitiativesService @Inject()(
         team                  = teamName,
         digitalService        = digitalService,
         environment           = None,
-        scopes                = List(Test)
+        scopes                = Seq(DependencyScope.Test)
       ),
       createMigrationInitiative(
         initiativeName        = "Tudor Crown Upgrade - Production",
@@ -196,6 +199,10 @@ class PlatformInitiativesService @Inject()(
         version               = Version.apply("21.0.0"),
         team                  = teamName,
         digitalService        = digitalService
+      ),
+      createGovUkBrandInitiative(
+        team                  = teamName,
+        digitalService        = digitalService
       )
     ).sequence
      .map(
@@ -203,18 +210,88 @@ class PlatformInitiativesService @Inject()(
         .filter(!_.experimental || displayExperimentalInitiatives)
      )
 
+  def createGovUkBrandInitiative(
+    team          : Option[String],
+    digitalService: Option[String]
+  )(implicit
+    ec: ExecutionContext
+  ): Future[PlatformInitiative] =
+    ( Seq("play-frontend-hmrc-play-28", "play-frontend-hmrc-play-29", "play-frontend-hmrc-play-30")
+      .foldLeftM(Seq.empty[MetaArtefactDependency]): (acc, artefact) =>
+        serviceDependenciesConnector
+          .getMetaArtefactDependency("uk.gov.hmrc", artefact, Some(Environment.Production), Seq(DependencyScope.Compile))
+            .map(_ ++ acc)
+      .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_)))) // Filtering for exclusively owned repos
+      .map(_.filter(dependencies => digitalService.fold(true)(x => dependencies.digitalService.exists(_ == x))))
+    , serviceConfigsConnector
+        .searchConfig(
+          key            = "play-frontend-hmrc.useRebrand",
+          value          = "true",
+          environment    = Seq(Environment.Production),
+          team           = team,
+          digitalService = digitalService
+        )
+    ).mapN: (dependencies, withConfig) =>
+      val repoLinks =
+        Seq(
+          "play-frontend-hmrc-play-28" -> "play-frontend-hmrc-play-28",
+          "play-frontend-hmrc-play-29" -> "29",
+          "play-frontend-hmrc-play-30" -> "30"
+        )
+          .map((artefact, label) => s"[$label](${
+            dependencyExplorerUrl(
+              group    = "uk.gov.hmrc",
+              artefact = artefact,
+              flag     = "production",
+              team     = team
+            )})")
+      val upgradedLinks =
+        Seq(
+          "play-frontend-hmrc-play-29" -> "29",
+          "play-frontend-hmrc-play-30" -> "30"
+        )
+          .map((artefact, label) => s"[$label](${
+            dependencyExplorerUrl(
+              group        = "uk.gov.hmrc",
+              artefact     = artefact,
+              flag         = "production",
+              versionRange = Some("[12.3.0,]"),
+              team         = team
+            )})")
+      PlatformInitiative(
+        initiativeName          = "GOV•UK brand refresh",
+        initiativeDescription   = s"""Repos using ${repoLinks.mkString(" | ")} require version 12.3.0+ ${upgradedLinks.mkString(" | ")} and enabling Config [play-frontend-hmrc.useRebrand](${
+                                    searchConfigUrl(
+                                      key         = "play-frontend-hmrc.useRebrand",
+                                      value       = "true",
+                                      team        = team,
+                                      environment = "production"
+                                    )
+                                  }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/jYGZQ"})""",
+        progress                = Progress(
+                                    current = dependencies.filter(d => Version(d.depVersion) >= Version("12.3.0"))
+                                                .map(_.repoName).intersect(withConfig.map(_.serviceName))
+                                                .size,
+                                    target  = dependencies.length
+                                  ),
+        completedLegend         = "Completed",
+        inProgressLegend        = "Not Completed",
+        experimental            = false
+      )
+
+
   def createJavaInitiative(
-     initiativeName       : String,
-     initiativeDescription: String,
-     version              : Version,
-     team                 : Option[String],
-     digitalService       : Option[String],
-     completedLegend      : String         = "Completed",
-     inProgressLegend     : String         = "Not Completed",
-     experimental         : Boolean        = false
-   )(implicit
-     ec: ExecutionContext
-   ): Future[PlatformInitiative] =
+    initiativeName       : String,
+    initiativeDescription: String,
+    version              : Version,
+    team                 : Option[String],
+    digitalService       : Option[String],
+    completedLegend      : String         = "Completed",
+    inProgressLegend     : String         = "Not Completed",
+    experimental         : Boolean        = false
+  )(implicit
+    ec: ExecutionContext
+  ): Future[PlatformInitiative] =
     serviceDependenciesConnector
       .getSlugJdkVersions(team, digitalService)
       .map: repos =>
@@ -236,13 +313,13 @@ class PlatformInitiativesService @Inject()(
     group                : String,
     artefact             : String,
     version              : Version,
-    team                 : Option[String]        = None,
-    digitalService       : Option[String]        = None,
-    environment          : Option[Environment]   = Some(Environment.Production),
-    scopes               : List[DependencyScope] = List(Compile),
-    completedLegend      : String                = "Completed",
-    inProgressLegend     : String                = "Not Completed",
-    experimental         : Boolean               = false
+    team                 : Option[String]       = None,
+    digitalService       : Option[String]       = None,
+    environment          : Option[Environment]  = Some(Environment.Production),
+    scopes               : Seq[DependencyScope] = Seq(DependencyScope.Compile),
+    completedLegend      : String               = "Completed",
+    inProgressLegend     : String               = "Not Completed",
+    experimental         : Boolean              = false
   )(implicit
     ec                   : ExecutionContext
   ): Future[PlatformInitiative] =
@@ -267,14 +344,14 @@ class PlatformInitiativesService @Inject()(
     initiativeDescription: String,
     fromArtefacts        : Seq[Artefact],
     toArtefacts          : Seq[Artefact],
-    targetVersion        : Option[Version]       = None,
-    team                 : Option[String]        = None,
-    digitalService       : Option[String]        = None,
-    environment          : Option[Environment]   = Some(Environment.Production),
-    scopes               : List[DependencyScope] = List(Compile),
-    completedLegend      : String                = "Completed",
-    inProgressLegend     : String                = "Not Completed",
-    experimental         : Boolean               = false
+    targetVersion        : Option[Version]      = None,
+    team                 : Option[String]       = None,
+    digitalService       : Option[String]       = None,
+    environment          : Option[Environment]  = Some(Environment.Production),
+    scopes               : Seq[DependencyScope] = Seq(DependencyScope.Compile),
+    completedLegend      : String               = "Completed",
+    inProgressLegend     : String               = "Not Completed",
+    experimental         : Boolean              = false
   )(implicit
     ec                   : ExecutionContext
   ): Future[PlatformInitiative] =
@@ -282,13 +359,13 @@ class PlatformInitiativesService @Inject()(
       fromDependencies     <- fromArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
-                                .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
-                                .map(_.filter(dependencies => digitalService.fold(true)(x => dependencies.digitalService.exists(_ == x))))
+                                .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_)))) // Filtering for exclusively owned repos
+                                .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
       targetDependencies   <- toArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
-                                .map(_.filter(dependencies => team.fold(true)(dependencies.teams == Seq(_)))) // Filtering for exclusively owned repos
-                                .map(_.filter(dependencies => digitalService.fold(true)(x => dependencies.digitalService.exists(_ == x))))
+                                .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_)))) // Filtering for exclusively owned repos
+                                .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
       allDependencies       = fromDependencies ++ targetDependencies
     yield PlatformInitiative(
       initiativeName        = initiativeName,
@@ -314,3 +391,12 @@ class PlatformInitiativesService @Inject()(
     url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=$group&artefact=$artefact&versionRange=$versionRange&team=$team&flag=$flag&repoType[]=$repoTypes&scope[]=$scopes"
       .toString
       .replace(")", "\\)") // for markdown
+
+  def searchConfigUrl(
+    key           : String,
+    value         : String,
+    team          : Option[String] = None,
+    environment   : String
+  ): String =
+    url"https://catalogue.tax.service.gov.uk/config/search/results?teamName=$team&configKey=$key&showEnvironments[]=$environment&configValue=$value&valueFilterType=equalTo"
+      .toString

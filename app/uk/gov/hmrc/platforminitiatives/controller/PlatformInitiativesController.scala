@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.platforminitiatives.controllers
+package uk.gov.hmrc.platforminitiatives.controller
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
-import uk.gov.hmrc.platforminitiatives.services.PlatformInitiativesService
+import uk.gov.hmrc.platforminitiatives.service.PlatformInitiativesService
 
 @Singleton
 class PlatformInitiativesController @Inject()(
