@@ -38,42 +38,41 @@ class PlatformInitiativesControllerSpec
      with Results
      with MockitoSugar:
 
-  "Platform Initiatives controller" should {
-    "have the correct url set up for the initiatives list" in {
+  "Platform Initiatives controller" should:
+    "have the correct url set up for the initiatives list" in:
       uk.gov.hmrc.platforminitiatives.controller.routes.PlatformInitiativesController.initiatives(None, None)
-        .url shouldBe "/platform-initiatives/initiatives"
-    }
-  }
+        .url shouldBe "/initiatives"
 
-  "PlatformInitiativesController.allInitiatives" should {
-    "return a 200 status code and correct JSON for PlatformInitiatives" in new Setup {
-      val mockInitiatives: Seq[PlatformInitiative] = Seq(
-        PlatformInitiative(
-          initiativeName        = "Test initiative",
-          initiativeDescription = "Test initiative description",
-          progress              = Progress(
-                                    current       = 10,
-                                    target        = 100
-                                  ),
-          completedLegend       = "Completed",
-          inProgressLegend      = "Not completed",
-          experimental          = false
-        ),
-        PlatformInitiative(
-          initiativeName        = "Update Dependency",
-          initiativeDescription = "Update Dependency description",
-          progress              = Progress(
-                                    current       = 50,
-                                    target        = 70
-                                  ),
-          completedLegend       = "Completed",
-          inProgressLegend      = "Not completed",
-          experimental          = false
+  "PlatformInitiativesController.allInitiatives" should:
+    "return a 200 status code and correct JSON for PlatformInitiatives" in new Setup:
+      val initiatives: Seq[PlatformInitiative] =
+        Seq(
+          PlatformInitiative(
+            initiativeName        = "Test initiative",
+            initiativeDescription = "Test initiative description",
+            progress              = Progress(
+                                      current       = 10,
+                                      target        = 100
+                                    ),
+            completedLegend       = "Completed",
+            inProgressLegend      = "Not completed",
+            experimental          = false
+          ),
+          PlatformInitiative(
+            initiativeName        = "Update Dependency",
+            initiativeDescription = "Update Dependency description",
+            progress              = Progress(
+                                      current       = 50,
+                                      target        = 70
+                                    ),
+            completedLegend       = "Completed",
+            inProgressLegend      = "Not completed",
+            experimental          = false
+          )
         )
-      )
 
       when(mockPlatformInitiativesService.platformInitiatives(None, None))
-        .thenReturn(Future.successful(mockInitiatives))
+        .thenReturn(Future.successful(initiatives))
 
       val result: Future[Result] = controller.initiatives(None, None).apply(FakeRequest())
 
@@ -102,38 +101,37 @@ class PlatformInitiativesControllerSpec
            }
           ]
           """)
-    }
-  }
 
-  "PlatformInitiativesController.teamInitiatives" should {
-    "return a 200 status code and correct JSON for a specified teams PlatformInitiatives" in new Setup {
-      val mockInitiatives: Seq[PlatformInitiative] = Seq(
-        PlatformInitiative(
-          initiativeName        = "Test initiative",
-          initiativeDescription = "Test initiative description",
-          progress              = Progress(
-                                    current       = 1,
-                                    target        = 1
-                                  ),
-          completedLegend       = "Completed",
-          inProgressLegend      = "Not completed",
-          experimental          = false
-        ),
-        PlatformInitiative(
-          initiativeName        = "Update Dependency",
-          initiativeDescription = "Update Dependency description",
-          progress              = Progress(
-                                    current       = 0,
-                                    target        = 1
-                                  ),
-          completedLegend       = "Completed",
-          inProgressLegend      = "Not completed",
-          experimental          = false
+  "PlatformInitiativesController.teamInitiatives" should:
+    "return a 200 status code and correct JSON for a specified teams PlatformInitiatives" in new Setup:
+      val initiatives: Seq[PlatformInitiative] =
+        Seq(
+          PlatformInitiative(
+            initiativeName        = "Test initiative",
+            initiativeDescription = "Test initiative description",
+            progress              = Progress(
+                                      current       = 1,
+                                      target        = 1
+                                    ),
+            completedLegend       = "Completed",
+            inProgressLegend      = "Not completed",
+            experimental          = false
+          ),
+          PlatformInitiative(
+            initiativeName        = "Update Dependency",
+            initiativeDescription = "Update Dependency description",
+            progress              = Progress(
+                                      current       = 0,
+                                      target        = 1
+                                    ),
+            completedLegend       = "Completed",
+            inProgressLegend      = "Not completed",
+            experimental          = false
+          )
         )
-      )
 
       when(mockPlatformInitiativesService.platformInitiatives(Some("team-1"), None))
-        .thenReturn(Future.successful(mockInitiatives))
+        .thenReturn(Future.successful(initiatives))
 
       val result: Future[Result] = controller.initiatives(Some("team-1"), None).apply(FakeRequest())
 
@@ -162,10 +160,8 @@ class PlatformInitiativesControllerSpec
            }
           ]
           """)
-    }
-  }
 
-  private trait Setup {
+  private trait Setup:
     given HeaderCarrier = HeaderCarrier()
 
     val mockPlatformInitiativesService: PlatformInitiativesService = mock[PlatformInitiativesService]
@@ -174,4 +170,3 @@ class PlatformInitiativesControllerSpec
       mockPlatformInitiativesService,
       stubControllerComponents()
     )
-  }

@@ -47,20 +47,21 @@ class ServiceConfigsConnector @Inject() (
     digitalService: Option[String]
   )(using HeaderCarrier): Future[Seq[Config]] =
     val params =
+      // Note only values of String, Option[String] are supported by the url interpolator, so environments (Seq[String])
+      // are added to the url separately
       Map(
-        "key"                -> key,
-        "value"              -> value,
-        "showEnvironments[]" -> environment,
-        "keyFilterType"      -> "equalTo",
-        "valueFilterType"    -> "equalTo",
-        "teamName"           -> team,
-        "digitalService"     -> digitalService
+        "key"             -> key,
+        "value"           -> value,
+        "keyFilterType"   -> "equalTo",
+        "valueFilterType" -> "equalTo",
+        "teamName"        -> team,
+        "digitalService"  -> digitalService
       )
 
     given Reads[Config] = Config.reads
 
     httpClientV2
-      .get(url"$baseUrl/service-configs/search?$params")
+      .get(url"$baseUrl/service-configs/search?$params&environment=${environment.map(_.asString)}")
       .execute[Seq[Config]]
 
 object ServiceConfigsConnector:
