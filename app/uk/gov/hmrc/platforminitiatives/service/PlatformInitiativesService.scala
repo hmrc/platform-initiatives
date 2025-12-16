@@ -360,7 +360,7 @@ class PlatformInitiativesService @Inject()(
       fromDependencies     <- fromArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
-                                .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_)))) // Filtering for exclusively owned repos
+                                .map(_.filter(dependency => team.fold(true)(dependency.teams.contains(_)))) // Filtering for exclusively owned repos
                                 .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
       targetDependencies   <- toArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
