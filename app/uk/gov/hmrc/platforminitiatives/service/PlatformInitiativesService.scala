@@ -221,7 +221,7 @@ class PlatformInitiativesService @Inject()(
         serviceDependenciesConnector
           .getMetaArtefactDependency("uk.gov.hmrc", artefact, Some(Environment.Production), Seq(DependencyScope.Compile))
             .map(_ ++ acc)
-      .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_)))) // Filtering for exclusively owned repos
+      .map(_.filter(dependency => team.fold(true)(dependency.teams.contains(_))))
       .map(_.filter(dependencies => digitalService.fold(true)(x => dependencies.digitalService.exists(_ == x))))
     , serviceConfigsConnector
         .searchConfig(
@@ -325,7 +325,7 @@ class PlatformInitiativesService @Inject()(
   ): Future[PlatformInitiative] =
     serviceDependenciesConnector
       .getMetaArtefactDependency(group, artefact, environment, scopes)
-      .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_))))  // Filtering for exclusively owned repos, if set
+      .map(_.filter(dependency => team.fold(true)(dependency.teams.contains(_))))
       .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
       .map: dependencies =>
         PlatformInitiative(
@@ -360,12 +360,12 @@ class PlatformInitiativesService @Inject()(
       fromDependencies     <- fromArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
-                                .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_)))) // Filtering for exclusively owned repos
+                                .map(_.filter(dependency => team.fold(true)(dependency.teams.contains(_))))
                                 .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
       targetDependencies   <- toArtefacts
                                 .traverse(a => serviceDependenciesConnector.getMetaArtefactDependency(a.group, a.name, environment, scopes))
                                 .map(_.flatten)
-                                .map(_.filter(dependency => team.fold(true)(dependency.teams == Seq(_)))) // Filtering for exclusively owned repos
+                                .map(_.filter(dependency => team.fold(true)(dependency.teams.contains(_))))
                                 .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
       allDependencies       = fromDependencies ++ targetDependencies
     yield PlatformInitiative(
