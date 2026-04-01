@@ -211,6 +211,44 @@ class PlatformInitiativesServiceSpec
       result.initiativeName shouldBe "GOV•UK Brand Refresh"
       result.progress       shouldBe Progress(current = 1, target = 3)
 
+  "play-frontend-hmrc v13 Upgrade" should:
+    "return an initiative for upgrading play-frontend-hmrc to v13" in new Setup:
+      val dependencies = Seq(
+        "repo1" -> "12.0.0",
+        "repo2" -> "13.0.0",
+        "repo3" -> "13.1.0",
+        "repo4" -> "11.5.0"
+      ).map: (name, version) =>
+        MetaArtefactDependency(
+          repoName       = name,
+          depGroup       = "uk.gov.hmrc",
+          depArtefact    = "play-frontend-hmrc",
+          depVersion     = version,
+          teams          = Seq.empty,
+          digitalService = None
+        )
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
+        group       = any[String],
+        artefact    = any[String],
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[Seq[DependencyScope]]
+      )(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(dependencies))
+
+      val result: PlatformInitiative =
+        platformInitiativesService.createUpgradeInitiative(
+          initiativeName        = "play-frontend-hmrc v13 Upgrade",
+          initiativeDescription = "All services must upgrade to play-frontend-hmrc v13.1.0 or higher.",
+          group                 = "uk.gov.hmrc",
+          artefact              = "play-frontend-hmrc",
+          version               = Version("13.1.0"),
+          team                  = None,
+          digitalService        = None
+        ).futureValue
+      result.initiativeName shouldBe "play-frontend-hmrc v13 Upgrade"
+      result.progress       shouldBe Progress(current = 1, target = 4)
+
 
   "platformInitiatives" should:
     "return all initiatives" in new Setup:
@@ -239,7 +277,7 @@ class PlatformInitiativesServiceSpec
          )))
 
       val result: Seq[PlatformInitiative] = platformInitiativesService.platformInitiatives(teamName = None, digitalService = None).futureValue
-      result.length shouldBe 9
+      result.length shouldBe 10
 
   private[this] trait Setup:
     given HeaderCarrier = HeaderCarrier()
