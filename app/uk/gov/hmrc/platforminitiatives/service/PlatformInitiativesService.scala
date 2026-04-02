@@ -212,12 +212,12 @@ class PlatformInitiativesService @Inject()(
                                     artefact     = "play-frontend-hmrc",
                                     flag         = "production",
                                     team         = teamName,
-                                    versionRange = Some("[0.0.0,13.1.0)")
+                                    versionRange = Some("[0.0.0,13.0.0)")
                                   )
-                                }) v13.1.0 or higher.""",
+                                }) v13.0.0 or higher.""",
         group                 = "uk.gov.hmrc",
         artefact              = "play-frontend-hmrc",
-        version               = Version("13.1.0"),
+        version               = Version("13.0.0"),
         team                  = teamName,
         digitalService        = digitalService
       )
