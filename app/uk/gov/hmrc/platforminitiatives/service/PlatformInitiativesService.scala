@@ -203,6 +203,23 @@ class PlatformInitiativesService @Inject()(
       createGovUkBrandInitiative(
         team                  = teamName,
         digitalService        = digitalService
+      ),
+      createUpgradeInitiative(
+        initiativeName        = "play-frontend-hmrc v13 Upgrade",
+        initiativeDescription = s"""All services must upgrade to [play-frontend-hmrc](${
+                                  dependencyExplorerUrl(
+                                    group        = "uk.gov.hmrc",
+                                    artefact     = "play-frontend-hmrc",
+                                    flag         = "production",
+                                    team         = teamName,
+                                    versionRange = Some("[0.0.0,13.0.0)")
+                                  )
+                                }) v13.0.0 or higher.""",
+        group                 = "uk.gov.hmrc",
+        artefact              = "play-frontend-hmrc",
+        version               = Version("13.0.0"),
+        team                  = teamName,
+        digitalService        = digitalService
       )
     ).sequence
      .map(
