@@ -204,20 +204,7 @@ class PlatformInitiativesService @Inject()(
         team                  = teamName,
         digitalService        = digitalService
       ),
-      createUpgradeInitiative(
-        initiativeName        = "play-frontend-hmrc v13 Upgrade",
-        initiativeDescription = s"""All services must upgrade to [play-frontend-hmrc](${
-                                  dependencyExplorerUrl(
-                                    group        = "uk.gov.hmrc",
-                                    artefact     = "play-frontend-hmrc",
-                                    flag         = "production",
-                                    team         = teamName,
-                                    versionRange = Some("[0.0.0,13.0.0)")
-                                  )
-                                }) v13.0.0 or higher.""",
-        group                 = "uk.gov.hmrc",
-        artefact              = "play-frontend-hmrc",
-        version               = Version("13.0.0"),
+      createPlayFrontendHmrcV13Initiative(
         team                  = teamName,
         digitalService        = digitalService
       )
@@ -295,6 +282,46 @@ class PlatformInitiativesService @Inject()(
         inProgressLegend        = "Not Completed",
         experimental            = false
       )
+
+
+  def createPlayFrontendHmrcV13Initiative(
+    team          : Option[String],
+    digitalService: Option[String]
+  )(implicit
+    ec: ExecutionContext
+  ): Future[PlatformInitiative] =
+    Seq("play-frontend-hmrc-play-29", "play-frontend-hmrc-play-30")
+      .foldLeftM(Seq.empty[MetaArtefactDependency]): (acc, artefact) =>
+        serviceDependenciesConnector
+          .getMetaArtefactDependency("uk.gov.hmrc", artefact, Some(Environment.Production), Seq(DependencyScope.Compile))
+          .map(_ ++ acc)
+      .map(_.filter(dependency => team.fold(true)(dependency.teams.contains(_))))
+      .map(_.filter(dependency => digitalService.fold(true)(x => dependency.digitalService.exists(_ == x))))
+      .map: dependencies =>
+        val repoLinks =
+          Seq(
+            "play-frontend-hmrc-play-29" -> "29",
+            "play-frontend-hmrc-play-30" -> "30"
+          )
+            .map((artefact, label) => s"[$label](${
+              dependencyExplorerUrl(
+                group        = "uk.gov.hmrc",
+                artefact     = artefact,
+                flag         = "production",
+                team         = team,
+                versionRange = Some("[0.0.0,13.0.0)")
+              )})")
+        PlatformInitiative(
+          initiativeName          = "play-frontend-hmrc v13 Upgrade",
+          initiativeDescription   = s"""All services must upgrade to play-frontend-hmrc v13.0.0 or higher. Repos still below v13.0.0: ${repoLinks.mkString("(", " | ", ")")}.""",
+          progress                = Progress(
+                                      current = dependencies.count(d => Version(d.depVersion) >= Version("13.0.0")),
+                                      target  = dependencies.length
+                                    ),
+          completedLegend         = "Completed",
+          inProgressLegend        = "Not Completed",
+          experimental            = false
+        )
 
 
   def createJavaInitiative(

@@ -213,41 +213,66 @@ class PlatformInitiativesServiceSpec
 
   "play-frontend-hmrc v13 Upgrade" should:
     "return an initiative for upgrading play-frontend-hmrc to v13" in new Setup:
-      val dependencies = Seq(
-        "repo1" -> "12.0.0",
-        "repo2" -> "12.9.0",
-        "repo3" -> "13.2.0",
-        "repo4" -> "11.5.0"
-      ).map: (name, version) =>
+      val play29Dependencies = Seq(
         MetaArtefactDependency(
-          repoName       = name,
+          repoName       = "repo1",
           depGroup       = "uk.gov.hmrc",
-          depArtefact    = "play-frontend-hmrc",
-          depVersion     = version,
+          depArtefact    = "play-frontend-hmrc-play-29",
+          depVersion     = "12.0.0",
+          teams          = Seq.empty,
+          digitalService = None
+        ),
+        MetaArtefactDependency(
+          repoName       = "repo2",
+          depGroup       = "uk.gov.hmrc",
+          depArtefact    = "play-frontend-hmrc-play-29",
+          depVersion     = "13.1.0",
           teams          = Seq.empty,
           digitalService = None
         )
+      )
+      val play30Dependencies = Seq(
+        MetaArtefactDependency(
+          repoName       = "repo3",
+          depGroup       = "uk.gov.hmrc",
+          depArtefact    = "play-frontend-hmrc-play-30",
+          depVersion     = "13.0.0",
+          teams          = Seq.empty,
+          digitalService = None
+        ),
+        MetaArtefactDependency(
+          repoName       = "repo4",
+          depGroup       = "uk.gov.hmrc",
+          depArtefact    = "play-frontend-hmrc-play-30",
+          depVersion     = "11.5.0",
+          teams          = Seq.empty,
+          digitalService = None
+        )
+      )
       when(mockServiceDependenciesConnector.getMetaArtefactDependency(
         group       = any[String],
-        artefact    = any[String],
+        artefact    = eqTo("play-frontend-hmrc-play-29"),
         environment = any[Option[Environment]],
         range       = any[String],
         scopes      = any[Seq[DependencyScope]]
       )(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(dependencies))
+        .thenReturn(Future.successful(play29Dependencies))
+      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
+        group       = any[String],
+        artefact    = eqTo("play-frontend-hmrc-play-30"),
+        environment = any[Option[Environment]],
+        range       = any[String],
+        scopes      = any[Seq[DependencyScope]]
+      )(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(play30Dependencies))
 
       val result: PlatformInitiative =
-        platformInitiativesService.createUpgradeInitiative(
-          initiativeName        = "play-frontend-hmrc v13 Upgrade",
-          initiativeDescription = "All services must upgrade to play-frontend-hmrc v13.0.0 or higher.",
-          group                 = "uk.gov.hmrc",
-          artefact              = "play-frontend-hmrc",
-          version               = Version("13.0.0"),
-          team                  = None,
-          digitalService        = None
+        platformInitiativesService.createPlayFrontendHmrcV13Initiative(
+          team           = None,
+          digitalService = None
         ).futureValue
       result.initiativeName shouldBe "play-frontend-hmrc v13 Upgrade"
-      result.progress       shouldBe Progress(current = 1, target = 4)
+      result.progress       shouldBe Progress(current = 2, target = 4)
 
 
   "platformInitiatives" should:
