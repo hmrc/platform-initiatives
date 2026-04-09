@@ -313,7 +313,7 @@ class PlatformInitiativesService @Inject()(
               )})")
         PlatformInitiative(
           initiativeName          = "play-frontend-hmrc v13 Upgrade",
-          initiativeDescription   = s"""All services must upgrade to play-frontend-hmrc v13.0.0 or higher. Repos still below v13.0.0: ${repoLinks.mkString("(", " | ", ")")}.""",
+          initiativeDescription   = s"""play-frontend-hmrc upgrade to v13.0.0 or higher which brings in the new major version of govuk-frontend v6 and [contains breaking changes that might need coordination across all services participating in a digital service](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=1245937803"}). Repos still below v13.0.0: ${repoLinks.mkString("(", " | ", ")")}.""",
           progress                = Progress(
                                       current = dependencies.count(d => Version(d.depVersion) >= Version("13.0.0")),
                                       target  = dependencies.length
