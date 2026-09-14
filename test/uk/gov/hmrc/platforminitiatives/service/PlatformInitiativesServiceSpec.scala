@@ -25,8 +25,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.platforminitiatives.connector.{ServiceConfigsConnector,ServiceDependenciesConnector}
-import uk.gov.hmrc.platforminitiatives.connector.ServiceConfigsConnector.Config
+import uk.gov.hmrc.platforminitiatives.connector.ServiceDependenciesConnector
 import uk.gov.hmrc.platforminitiatives.model.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -168,49 +167,6 @@ class PlatformInitiativesServiceSpec
       result.initiativeName shouldBe "Test"
       result.progress       shouldBe Progress(current = 4, target = 5)
 
-  "createGovUkBrandInitiative" should:
-    "return initiative" in new Setup:
-      val dependencies = Seq(
-        "repo1" -> "1.0.0",
-        "repo2" -> "12.3.0",
-        "repo3" -> "12.4.0"
-      ).map: (name, version) =>
-        MetaArtefactDependency(
-          repoName       = name,
-          depGroup       = "uk.gov.hmrc",
-          depArtefact    = "play-frontend-hmrc-play-30",
-          depVersion     = version,
-          teams          = Seq.empty,
-          digitalService = None
-        )
-      when(mockServiceDependenciesConnector.getMetaArtefactDependency(
-        group       = any[String],
-        artefact    = any[String],
-        environment = any[Option[Environment]],
-        range       = any[String],
-        scopes      = any[Seq[DependencyScope]]
-      )(using any[HeaderCarrier]))
-        .thenReturn(Future.successful(dependencies))
-        .thenReturn(Future.successful(Seq.empty))
-
-      val configs = Seq(Config("repo2"))
-      when(mockServiceConfigsConnector.searchConfig(
-        key            = any[String],
-        value          = any[String],
-        environment    = any[Seq[Environment]],
-        team           = any[Option[String]],
-        digitalService = any[Option[String]]
-       )(using any[HeaderCarrier]))
-         .thenReturn(Future.successful(configs))
-
-      val result: PlatformInitiative =
-        platformInitiativesService.createGovUkBrandInitiative(
-          team           = None,
-          digitalService = None
-        ).futureValue
-      result.initiativeName shouldBe "GOV•UK Brand Refresh"
-      result.progress       shouldBe Progress(current = 1, target = 3)
-
   "play-frontend-hmrc v13 Upgrade" should:
     "return an initiative for upgrading play-frontend-hmrc to v13" in new Setup:
       val play29Dependencies = Seq(
@@ -289,33 +245,20 @@ class PlatformInitiativesServiceSpec
         .thenReturn(Future.successful(metaArtefactDependencies))
       when(mockServiceDependenciesConnector.getSlugJdkVersions(team = any, digitalService = any)(using any[HeaderCarrier]))
         .thenReturn(Future.successful(slugJdkVersions))
-      when(mockServiceConfigsConnector.searchConfig(
-        key            = any[String],
-        value          = any[String],
-        environment    = any[Seq[Environment]],
-        team           = any[Option[String]],
-        digitalService = any[Option[String]]
-       )(using any[HeaderCarrier]))
-         .thenReturn(Future.successful(Seq(
-           Config("service-1"),
-           Config("service-2")
-         )))
 
       val result: Seq[PlatformInitiative] = platformInitiativesService.platformInitiatives(teamName = None, digitalService = None).futureValue
-      result.length shouldBe 10
+      result.length shouldBe 9
 
   private[this] trait Setup:
     given HeaderCarrier = HeaderCarrier()
     val includeExperimental = false
     val mockConfiguration                : Configuration                 = mock[Configuration]
-    val mockServiceConfigsConnector      : ServiceConfigsConnector       = mock[ServiceConfigsConnector]
     val mockServiceDependenciesConnector : ServiceDependenciesConnector  = mock[ServiceDependenciesConnector]
     val mockControllerComponents         : ControllerComponents          = mock[ControllerComponents]
 
     lazy val platformInitiativesService  : PlatformInitiativesService    =
       new PlatformInitiativesService(
         mockConfiguration,
-        mockServiceConfigsConnector,
         mockServiceDependenciesConnector,
         mockControllerComponents
       )

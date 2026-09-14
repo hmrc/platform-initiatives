@@ -20,7 +20,7 @@ import cats.implicits.*
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.platforminitiatives.connector.{ServiceConfigsConnector, ServiceDependenciesConnector}
+import uk.gov.hmrc.platforminitiatives.connector.ServiceDependenciesConnector
 import uk.gov.hmrc.platforminitiatives.model.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -29,7 +29,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PlatformInitiativesService @Inject()(
   configuration                 : Configuration,
-  serviceConfigsConnector       : ServiceConfigsConnector,
   serviceDependenciesConnector  : ServiceDependenciesConnector,
   cc                            : ControllerComponents
 ) extends BackendController(cc):
@@ -200,10 +199,6 @@ class PlatformInitiativesService @Inject()(
         team                  = teamName,
         digitalService        = digitalService
       ),
-      createGovUkBrandInitiative(
-        team                  = teamName,
-        digitalService        = digitalService
-      ),
       createPlayFrontendHmrcV13Initiative(
         team                  = teamName,
         digitalService        = digitalService
@@ -213,76 +208,6 @@ class PlatformInitiativesService @Inject()(
        _.filter(_.progress.target != 0)
         .filter(!_.experimental || displayExperimentalInitiatives)
      )
-
-  def createGovUkBrandInitiative(
-    team          : Option[String],
-    digitalService: Option[String]
-  )(implicit
-    ec: ExecutionContext
-  ): Future[PlatformInitiative] =
-    ( Seq("play-frontend-hmrc-play-28", "play-frontend-hmrc-play-29", "play-frontend-hmrc-play-30")
-      .foldLeftM(Seq.empty[MetaArtefactDependency]): (acc, artefact) =>
-        serviceDependenciesConnector
-          .getMetaArtefactDependency("uk.gov.hmrc", artefact, Some(Environment.Production), Seq(DependencyScope.Compile))
-            .map(_ ++ acc)
-      .map(_.filter(dependency => team.fold(true)(dependency.teams.contains(_))))
-      .map(_.filter(dependencies => digitalService.fold(true)(x => dependencies.digitalService.exists(_ == x))))
-    , serviceConfigsConnector
-        .searchConfig(
-          key            = "play-frontend-hmrc.useRebrand",
-          value          = "true",
-          environment    = Seq(Environment.Production),
-          team           = team,
-          digitalService = digitalService
-        )
-    ).mapN: (dependencies, withConfig) =>
-      val repoLinks =
-        Seq(
-          "play-frontend-hmrc-play-28" -> "28",
-          "play-frontend-hmrc-play-29" -> "29",
-          "play-frontend-hmrc-play-30" -> "30"
-        )
-          .map((artefact, label) => s"[$label](${
-            dependencyExplorerUrl(
-              group    = "uk.gov.hmrc",
-              artefact = artefact,
-              flag     = "production",
-              team     = team
-            )})")
-      val upgradedLinks =
-        Seq(
-          "play-frontend-hmrc-play-29" -> "29",
-          "play-frontend-hmrc-play-30" -> "30"
-        )
-          .map((artefact, label) => s"[$label](${
-            dependencyExplorerUrl(
-              group        = "uk.gov.hmrc",
-              artefact     = artefact,
-              flag         = "production",
-              versionRange = Some("[12.3.0,]"),
-              team         = team
-            )})")
-      PlatformInitiative(
-        initiativeName          = "GOV•UK Brand Refresh",
-        initiativeDescription   = s"""Repos using `play-frontend-hmrc` ${repoLinks.mkString("(", " | ", ")")} require version 12.3.0+ ${upgradedLinks.mkString("(", " | ", ")")} and enabling with [config](${
-                                    searchConfigUrl(
-                                      key         = "play-frontend-hmrc.useRebrand",
-                                      value       = "true",
-                                      team        = team,
-                                      environment = "production"
-                                    )
-                                  }) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/x/jYGZQ"})""",
-        progress                = Progress(
-                                    current = dependencies.filter(d => Version(d.depVersion) >= Version("12.3.0"))
-                                                .map(_.repoName).intersect(withConfig.map(_.serviceName))
-                                                .size,
-                                    target  = dependencies.length
-                                  ),
-        completedLegend         = "Completed",
-        inProgressLegend        = "Not Completed",
-        experimental            = false
-      )
-
 
   def createPlayFrontendHmrcV13Initiative(
     team          : Option[String],
@@ -436,12 +361,3 @@ class PlatformInitiativesService @Inject()(
     url"https://catalogue.tax.service.gov.uk/dependencyexplorer/results?group=$group&artefact=$artefact&versionRange=$versionRange&team=$team&flag=$flag&repoType[]=$repoTypes&scope[]=$scopes"
       .toString
       .replace(")", "\\)") // for markdown
-
-  def searchConfigUrl(
-    key           : String,
-    value         : String,
-    team          : Option[String] = None,
-    environment   : String
-  ): String =
-    url"https://catalogue.tax.service.gov.uk/config/search/results?teamName=$team&configKey=$key&showEnvironments[]=$environment&configValue=$value&valueFilterType=equalTo"
-      .toString
