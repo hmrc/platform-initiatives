@@ -247,7 +247,7 @@ class PlatformInitiativesServiceSpec
         .thenReturn(Future.successful(slugJdkVersions))
 
       val result: Seq[PlatformInitiative] = platformInitiativesService.platformInitiatives(teamName = None, digitalService = None).futureValue
-      result.length shouldBe 9
+      result.length shouldBe 8
 
   private[this] trait Setup:
     given HeaderCarrier = HeaderCarrier()

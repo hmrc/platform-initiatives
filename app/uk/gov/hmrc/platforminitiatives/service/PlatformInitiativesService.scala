@@ -70,46 +70,6 @@ class PlatformInitiativesService @Inject()(
         scopes                = Seq(DependencyScope.Test)
       ),
       createMigrationInitiative(
-        initiativeName        = "Tudor Crown Upgrade - Production",
-        initiativeDescription = s"""Monitoring repos still using [play-frontend-hmrc](${
-                                  dependencyExplorerUrl(
-                                    group    = "uk.gov.hmrc",
-                                    artefact = "play-frontend-hmrc",
-                                    flag     = "production",
-                                    team     = teamName
-                                  )
-                                }) or below v8.5.0 of [play-frontend-hmrc-play-28](${
-                                  dependencyExplorerUrl(
-                                    group        = "uk.gov.hmrc",
-                                    artefact     = "play-frontend-hmrc-play-28",
-                                    team         = teamName,
-                                    flag         = "production",
-                                    versionRange = Some("[0.0.0,8.5.0)")
-                                  )
-                                }) | [29](${
-                                  dependencyExplorerUrl(
-                                    group        = "uk.gov.hmrc",
-                                    artefact     = "play-frontend-hmrc-play-29",
-                                    flag         = "production",
-                                    team         = teamName,
-                                    versionRange = Some("[0.0.0,8.5.0)")
-                                  )
-                                } ) | [30](${
-                                  dependencyExplorerUrl(
-                                   group        = "uk.gov.hmrc",
-                                   artefact     = "play-frontend-hmrc-play-30",
-                                   team         = teamName,
-                                   flag         = "production",
-                                   versionRange = Some("[0.0.0,8.5.0)")
-                                  )
-                                } ) | [Confluence](${url"https://confluence.tools.tax.service.gov.uk/pages/viewpage.action?pageId=815170354"}).""",
-        fromArtefacts         = Seq(Artefact("uk.gov.hmrc","play-frontend-hmrc")),
-        toArtefacts           = Seq(Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-28"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-29"), Artefact("uk.gov.hmrc", "play-frontend-hmrc-play-30")),
-        targetVersion         = Some(Version("8.5.0")),
-        team                  = teamName,
-        digitalService        = digitalService
-      ),
-      createMigrationInitiative(
         initiativeName        = "Scala 3 Upgrade",
         initiativeDescription = s"""Scala 3 upgrade [repos still using Scala 2.13 and below](${
                                   dependencyExplorerUrl(
